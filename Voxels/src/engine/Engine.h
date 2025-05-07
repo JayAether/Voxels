@@ -81,7 +81,7 @@ public:
 
 	void setDepthTest(bool mode);
 	void setOpenglDebugOutput(bool mode);
-	void setCullFace(bool mode, int face);
+	void setCullFace(int mode);
 
 private:
 
@@ -90,7 +90,6 @@ private:
 	void processInput(Camera* camera);
 	bool gameShouldClose(); // dont like this name/thing, need to find a better thingy
 
-	void applySettings();
 	void calculateDeltaTime();
 
 	void mouseTracingMode(bool mode);

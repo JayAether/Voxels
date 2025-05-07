@@ -6,13 +6,13 @@
 
 #include <string>
 
-class Texture
+class Texture_old
 {
 	std::string m_Filename;
 	GLenum m_TextureTarget;
 	GLuint m_TextureObj;
 public:
-	Texture(GLenum textureTarget, const std::string& filename);
+	Texture_old(GLenum textureTarget, const std::string& filename);
 
 	bool load();
 

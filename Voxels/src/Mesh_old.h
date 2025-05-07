@@ -8,7 +8,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "Texture.h"
+#include "Texture_old.h"
 
 #include <string>
 #include <vector>
@@ -65,7 +65,7 @@ private:
     };
 
     std::vector<MeshEntry> m_Meshes;
-    std::vector<Texture*> m_Textures;
+    std::vector<Texture_old*> m_Textures;
 
     enum BUFFER_TYPE
     {

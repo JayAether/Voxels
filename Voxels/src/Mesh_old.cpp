@@ -1,4 +1,4 @@
-#include "Mesh.h"
+#include "Mesh_old.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -185,7 +185,7 @@ bool Mesh::initMaterials(const aiScene* pScene, const std::string& filename)
                 
                 std::string fullPath = dir + "/" + p;
 
-                m_Textures[i] = new Texture(GL_TEXTURE_2D, fullPath.c_str());
+                m_Textures[i] = new Texture_old(GL_TEXTURE_2D, fullPath.c_str());
 
                 if (!m_Textures[i]->load())
                 {

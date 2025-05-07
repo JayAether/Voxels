@@ -1,4 +1,4 @@
-#include "Texture.h"
+#include "Texture_old.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -8,13 +8,13 @@
 #include <iostream>
 
 // textureTargets option include: GL_TEXTURE_1D, GL_TEXTURE_2D, GL_TEXTURE_3D
-Texture::Texture(GLenum textureTarget, const std::string& filename)
+Texture_old::Texture_old(GLenum textureTarget, const std::string& filename)
 {
 	m_TextureTarget = textureTarget;
 	m_Filename = filename;
 }
 
-bool Texture::load()
+bool Texture_old::load()
 {
 	// load texture image
 	stbi_set_flip_vertically_on_load(1);
@@ -43,7 +43,7 @@ bool Texture::load()
 		printf("support for texture target %x is non existant you bitch\n", m_TextureTarget);
 		exit(1);
 	}
-
+	
 	// basic params, probably should make this its own thing
 	glTexParameterf(m_TextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameterf(m_TextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
@@ -57,7 +57,7 @@ bool Texture::load()
 	return true;
 }
 
-void Texture::bind(GLenum textureUnit)
+void Texture_old::bind(GLenum textureUnit)
 {
 	glActiveTexture(textureUnit);
 	glBindTexture(m_TextureTarget, m_TextureObj);

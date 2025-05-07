@@ -2,16 +2,16 @@
 
 
 #include "Chunk.h"
+#include "../Refrences.h"
 
 #include <unordered_map>
-
+#include <memory>
 
 class World
 {
 public:
 
 
-	
 	void render(ShaderProgram program)
 	{
 		for (auto i = m_allChunks.begin(); i != m_allChunks.end(); i++)
@@ -23,11 +23,18 @@ public:
 
 	void generateWorld()
 	{
-		for (int x = 0; x < worldSize; x++)
+		for (int x = -worldSize / 2; x < worldSize / 2; x++)
 		{
-			for (int z = 0; z < worldSize; z++)
+			for (int y = -worldSize / 2; y < worldSize / 2; y++)
 			{
-				createChunk(CHUNK_POS(x, 0, z));
+				for (int z = -worldSize / 2; z < worldSize / 2; z++)
+				{
+					glm::vec3 f = g_camera->position;
+
+
+					//createChunk(CHUNK_OFFSET(f.x + x, f.y + y, f.z + z));
+					createChunk(CHUNK_OFFSET(f.x + x, f.y + y, f.z + z));
+				}
 			}
 		}
 	}
@@ -36,54 +43,54 @@ public:
 	{
 		for (auto i = m_allChunks.begin(); i != m_allChunks.end(); i++)
 		{
-			bakeChunk(i->second->m_chunkPos);
+			bakeChunk(i->second->getChunkOffset());
 		}
 	}
 
 
-	bool createChunk(CHUNK_POS pos)
+	bool createChunk(CHUNK_OFFSET pos)
 	{
 		if (keyExists(pos))
 			return false;
 
-		Chunk *chunk = new Chunk(pos);
 		std::string key = getChunkKeyFromPos(pos);
 
-		m_allChunks.insert({ key, chunk });
+		m_allChunks.insert({ key, std::make_shared<Chunk>(pos) });
 
 		return true;
 	}
 
 	// entry point for any chunk baking. direct chunk baking is unadvisable
-	void bakeChunk(CHUNK_POS chunkPos)
+	void bakeChunk(CHUNK_OFFSET chunkPos)
 	{
-		Chunk* workingChunk = m_allChunks.at(getChunkKeyFromPos(chunkPos));
+		std::shared_ptr<Chunk> workingChunk = m_allChunks.at(getChunkKeyFromPos(chunkPos));
+		
 
-		workingChunk->clearBufferData();
+		workingChunk->clearData();
 		workingChunk->bakeCore();
 
-		for (int i = 0; i < Faces::NUM_FACES; i++)
+		for (int i = 0; i < Chunk::Faces::NUM_FACES; i++)
 		{
 			// get direction
 			glm::ivec3 axis = { 0, 0, 0 };
 			switch (i)
 			{
-			case Faces::NEGATIVE_X:
+			case Chunk::Faces::NEGATIVE_X:
 				axis.x--;
 				break;
-			case Faces::POSITIVE_X:
+			case Chunk::Faces::POSITIVE_X:
 				axis.x++;
 				break;
-			case Faces::NEGATIVE_Y:
+			case Chunk::Faces::NEGATIVE_Y:
 				axis.y--;
 				break;
-			case Faces::POSITIVE_Y:
+			case Chunk::Faces::POSITIVE_Y:
 				axis.y++;
 				break;
-			case Faces::NEGATIVE_Z:
+			case Chunk::Faces::NEGATIVE_Z:
 				axis.z--;
 				break;
-			case Faces::POSITIVE_Z:
+			case Chunk::Faces::POSITIVE_Z:
 				axis.z++;
 				break;
 			default:
@@ -94,24 +101,24 @@ public:
 			if (!keyExists(chunkPos + axis))
 				continue;
 
-			Chunk* secondaryChunk = m_allChunks.at(getChunkKeyFromPos(chunkPos + axis));
+			std::shared_ptr<Chunk> secondaryChunk = m_allChunks.at(getChunkKeyFromPos(chunkPos + axis));
 
 			int secondaryFace;
-			if ((Faces)i == Faces::NEGATIVE_X || (Faces)i == Faces::NEGATIVE_Y || (Faces)i == Faces::NEGATIVE_Z)
+			if ((Chunk::Faces)i == Chunk::Faces::NEGATIVE_X || (Chunk::Faces)i == Chunk::Faces::NEGATIVE_Y || (Chunk::Faces)i == Chunk::Faces::NEGATIVE_Z)
 				secondaryFace = i +1;
 			else
 				secondaryFace = i -1;
 
 			bool secondaryChunkBlockStates[Chunk::CHUNK_AREA];
-			secondaryChunk->getBorderBlockStates((Faces)secondaryFace, secondaryChunkBlockStates);
+			secondaryChunk->getBorderBlockStates((Chunk::Faces)secondaryFace, secondaryChunkBlockStates);
 
-			workingChunk->bakeBorder((Faces)i, secondaryChunkBlockStates);
+			workingChunk->bakeBorder((Chunk::Faces)i, secondaryChunkBlockStates);
 		}
 
 		workingChunk->populateBuffers();
 	}
 
-	std::string getChunkKeyFromPos(CHUNK_POS pos)
+	static std::string getChunkKeyFromPos(CHUNK_OFFSET pos)
 	{
 		std::string xNum = std::to_string(pos.x);
 		std::string yNum = std::to_string(pos.y);
@@ -120,7 +127,12 @@ public:
 		return (xNum + "X" + yNum + "Y" + zNum + "Z");
 	}
 
-	bool keyExists(CHUNK_POS pos)
+	CHUNK_OFFSET getChunkPosFromKey(std::string) const
+	{
+		// this should return an glm::ivec3
+	}
+
+	bool keyExists(CHUNK_OFFSET pos) const
 	{
 		std::string key = getChunkKeyFromPos(pos);
 
@@ -130,15 +142,10 @@ public:
 			return true;
 	}
 
-	CHUNK_POS getChunkPosFromKey(std::string)
-	{
-		// this should return an glm::ivec3
-	}
-
 private:
-	std::unordered_map<std::string, Chunk*> m_allChunks;
-
-	int worldSize = 12;
+	std::unordered_map<std::string, std::shared_ptr<Chunk>> m_allChunks;
+	
+	int worldSize = 2;
 };
 
 

@@ -99,6 +99,8 @@ void Engine::mainLoop()
 
         m_window->updateWindowTitle(std::to_string(1.0f / m_deltaTime));
 
+        //GLenum g = glGetError();
+        //printf("%i", g);
     }
 }
 
@@ -166,7 +168,7 @@ void Engine::processInput(Camera* camerfa)
 {
     Camera *camera = g_camera.get();
 
-    float speed = 1.5f;
+    float speed = 0.5f;
     GLFWwindow* context = glfwGetCurrentContext();
 
     if (glfwGetKey(context, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -197,46 +199,54 @@ void Engine::calculateDeltaTime()
 
 void Engine::setDepthTest(bool mode)
 {
-    if (!mode)
+    if (mode)
+    {
+        m_opengl_depthTest = true;
+        glEnable(GL_DEPTH_TEST);
+    }
+    else
     {
         m_opengl_depthTest = false;
         glDisable(GL_DEPTH_TEST);
-
     }
-
-    m_opengl_depthTest = true;
-    glEnable(GL_DEPTH_TEST);
 }
 
 void Engine::setOpenglDebugOutput(bool mode)
 {
-
+    if (mode)
+    {
+        m_opengl_debugOutput = true;
+        glEnable(GL_DEBUG_OUTPUT);
+    }
+    else
+    {
+        m_opengl_debugOutput = false;
+        glDisable(GL_DEBUG_OUTPUT);
+    }
 }
 
-void Engine::setCullFace(bool mode, int face)
+void Engine::setCullFace(int mode)
 {
-    if (!mode)
-    {
-        m_opengl_cullFace = false;
-        glDisable(GL_CULL_FACE);
-    }
-
-    switch (face)
+    switch (mode)
     {
     case 0:
+        m_opengl_cullFace = false;
+        glDisable(GL_CULL_FACE);
+        break;
+    case 1:
         glCullFace(GL_FRONT);
         glEnable(GL_CULL_FACE);
         break;
-    case 1:
+    case 2:
         glCullFace(GL_BACK);
         glEnable(GL_CULL_FACE);
         break;
-    case 2:
+    case 3:
         glCullFace(GL_FRONT_AND_BACK);
         glEnable(GL_CULL_FACE);
         break;
     default:
-        throw std::exception("there is no fourth cull face");
+        throw std::runtime_error("there is no fourth cull face");
         break;
     }
 }

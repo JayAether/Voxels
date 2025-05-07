@@ -21,12 +21,12 @@ void main()
 {
 	float chunkDisplacement = 2; //this is the distance between each chunk
 
-	vec3 chunkPos = chunkOffset * chunkSize; // chunkOffset * chunkSize gives the true chunk position
-	vec3 blockPos = aOffset + (chunkPos * chunkDisplacement); // true block pos; 
+	vec3 chunkPos = chunkOffset * chunkSize * chunkDisplacement; // chunkOffset * chunkSize gives the true chunk position
+//	vec3 blockPos = aOffset + (chunkPos * chunkDisplacement); // true block pos; 
 	// the `* 2` is cause the chunks intersect each other by default
 	
 
-	vec4 globalPos = vec4(aPos + blockPos*1, 1.0); // added with aPos gives the position for triangle 
+	vec4 globalPos = vec4(aPos + chunkPos, 1.0); // added with aPos gives the position for triangle 
 	// the `* 1` on the blockPos is the spacing between the blocks
 	
 	

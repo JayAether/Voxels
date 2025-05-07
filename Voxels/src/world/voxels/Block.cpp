@@ -10,17 +10,17 @@ bool Block::isActive()
 	return m_active;
 }
 
-bool Block::isTransparent()
+bool Block::isTransparent() const
 {
 	return m_transparent;
 }
 
-bool Block::isLiquid()
+bool Block::isLiquid() const
 {
 	return m_liquid;
 }
 
-bool Block::isSolidBlock()
+bool Block::isSolidBlock() const
 {
 
 	if (
@@ -37,7 +37,7 @@ bool Block::isSolidBlock()
 
 BlockID Block::getBlockID()
 {	
-	return m_blockType;	
+	return m_blockType;
 }
 
 

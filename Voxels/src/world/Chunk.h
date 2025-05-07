@@ -3,11 +3,11 @@
 
 #include "../engine/ShaderProgram.h"
 #include "voxels/Block.h"
-#include "../engine/graphics/VertexBuffer.h"
+#include "../engine/graphics/buffers/VertexBuffer.h"
 
 #include <memory>
 
-#define CHUNK_POS glm::ivec3 
+#define CHUNK_OFFSET glm::ivec3 
 
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
@@ -15,34 +15,30 @@
 #define TEX_COORD_LOCATION 1
 #define NORMAL_LOCATION    2
 
-enum Faces 
-{
-	NEGATIVE_X,
-	POSITIVE_X,
-	NEGATIVE_Y,
-	POSITIVE_Y,
-	NEGATIVE_Z,
-	POSITIVE_Z,
-	NUM_FACES,
-};
+
 
 struct Vertex
 {
 	Vertex(glm::vec3 pos, glm::vec3 color, glm::vec3 offset, glm::vec2 texCoord)
-		: pos(pos), color(color), offset(offset), texCoord(texCoord)
+		: x(pos.x), y(pos.y), z(pos.z), color(color)//, offset(offset), texCoord(texCoord)
 	{
 
 	}
 
-	glm::vec3 pos;
+	float x;
+	float y;
+	float z;
+
+	//glm::vec3 pos;
 	glm::vec3 color;
-	glm::vec3 offset;
-	glm::vec2 texCoord;
+	//glm::vec3 offset;
+	//glm::vec2 texCoord;
 };
 
 
 class Chunk
 {
+
 	enum Buffers
 	{
 		POS_BUFFER,
@@ -52,34 +48,44 @@ class Chunk
 	};
 
 public:
+	enum Faces
+	{
+		NEGATIVE_X,
+		POSITIVE_X,
+		NEGATIVE_Y,
+		POSITIVE_Y,
+		NEGATIVE_Z,
+		POSITIVE_Z,
+		NUM_FACES,
+	};
 
-	Chunk(CHUNK_POS chunkPos);
+public:
 
+	Chunk(CHUNK_OFFSET chunkPos);
 	~Chunk();
 
 	void update(float dt);
 	void render(ShaderProgram program);
 
-	void reserveBlockData();
 
 	void generateMap();
 
 	void bakeCore();
 	void bakeBorder(Faces direction, bool* blockStates);
 
-	// this assumes that this is a core block
-	bool coreBlockHasExposedFaces(int x, int y, int z);
+	bool coreBlockHasExposedFaces(int x, int y, int z) const;
 
-	void getBorderBlockStates(Faces direction, bool* blockStates);
+	void getBorderBlockStates(Faces direction, bool* blockStates) const;
 	
-	void clearBufferData();
+	void clearData();
 	void populateBuffers();
 
+	CHUNK_OFFSET getChunkOffset() const;
 
 
 private:
-	int getBlockIndex3D(int x, int y, int z);
-	int getBlockIndex2D(int x, int y);
+	int getBlockIndex3D(int x, int y, int z) const;
+	int getBlockIndex2D(int x, int y) const;
 
 	void setBlock(BlockID blockType, int x, int y, int z);
 
@@ -93,25 +99,21 @@ private:
 	void loadFaceNegativeZ(int x, int y, int z);
 	void loadFacePositiveZ(int x, int y, int z);
 
+
 public:
-
-	// the offset off of world's 0,0,0. ie multiply this by chunk size to get the chunk position
-	CHUNK_POS m_chunkPos;
-
-
 	static const int CHUNK_LEN = 32;
 	static const int CHUNK_AREA = CHUNK_LEN * CHUNK_LEN;
 	static const int CHUNK_VOL = CHUNK_LEN * CHUNK_LEN * CHUNK_LEN;
-
 private:
+	// the offset off of world's 0,0,0. ie multiply this by chunk size to get the chunk position
+	CHUNK_OFFSET m_chunkOffset;
 
 	std::vector<Block> m_blocks;
 
 	unsigned int m_VAO;
-	unsigned int m_buffer;
 	VertexBuffer m_vb;
 
-	std::vector<Vertex> m_vertices;
+	std::vector<Vertex> m_data;
 
 
 	//FastNoiseLite noise;

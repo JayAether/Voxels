@@ -10,8 +10,9 @@ int main()
 
     Engine engine;
 
-    engine.setCullFace(true, 0);
+    //engine.setCullFace(1);
     engine.setDepthTest(true);
+    engine.setOpenglDebugOutput(true);
 
     engine.mainLoop();
 }
@@ -19,5 +20,4 @@ int main()
 void initGlobals()
 {
     g_camera = std::make_unique<Camera>(Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-    g_VoxelData = std::make_unique<voxel_data>();
 }

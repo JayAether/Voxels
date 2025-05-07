@@ -8,8 +8,8 @@ class Block
 public:
 	Block()
 	{
-		//setBlockAir();
-		setStone_block();
+		setAir_block();
+		//setStone_block();
 	}
 	
 
@@ -64,10 +64,10 @@ public:
 	void setActive(bool status);
 
 	bool isActive();
-	bool isTransparent();
-	bool isLiquid();
+	bool isTransparent() const;
+	bool isLiquid() const;
 
-	bool isSolidBlock();
+	bool isSolidBlock() const;
 
 	BlockID getBlockID();
 

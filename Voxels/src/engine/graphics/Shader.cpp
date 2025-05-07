@@ -34,7 +34,7 @@ static ShaderString parseShader(std::string path)
 	//file.exceptions(std::ifstream::badbit | std::ifstream::failbit);
 
 	std::string line;
-	std::string ss[ShaderType::COUNT];
+	std::string strs[ShaderType::COUNT];
 
 	ShaderType type = ShaderType::NONE;
 
@@ -52,10 +52,10 @@ static ShaderString parseShader(std::string path)
 			}
 		}
 		else if (type != ShaderType::NONE)
-			ss[(int)type] += line;
+			strs[(int)type] += line;
 	}
 
-	return ShaderString(ss[VERTEX], ss[FRAGMENT]);
+	return ShaderString(strs[VERTEX], strs[FRAGMENT]);
 }
 
 

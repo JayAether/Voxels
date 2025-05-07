@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <string>
 
 
 enum BlockID : uint16_t
@@ -13,22 +12,4 @@ enum BlockID : uint16_t
 	DIRT_BLOCK,
 
 	BLOCK_COUNT
-};
-
-struct BlockData
-{
-	BlockID id;
-	std::string vertexPath;
-	std::string fragmentPath;
-	std::string shaderProgram;
-	std::string texturePath;
-
-	BlockData(BlockID id, std::string vertexPath, std::string fragmentPath, std::string shaderProgram, std::string texturePath)
-	{
-		this->id = id;
-		this->vertexPath = vertexPath;
-		this->fragmentPath = fragmentPath;
-		this->shaderProgram = shaderProgram;
-		this->texturePath = texturePath;
-	}
 };
