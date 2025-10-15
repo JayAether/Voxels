@@ -43,6 +43,7 @@ Chunk::Chunk(CHUNK_OFFSET chunkoffset)
 Chunk::~Chunk()
 {
 	glDeleteVertexArrays(1, &m_VAO);
+	glDeleteBuffers(1, &m_vb);
 
 	// TODO: actualy delete the blocks
 
