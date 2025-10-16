@@ -25,7 +25,8 @@ public:
 	{
 		for (int x = -worldSize / 2; x < worldSize / 2; x++)
 		{
-			for (int y = -worldSize / 2; y < worldSize / 2; y++)
+			uint32_t y = 1;
+			//for (int y = -worldSize / 2; y < worldSize / 2; y++)
 			{
 				for (int z = -worldSize / 2; z < worldSize / 2; z++)
 				{
@@ -33,7 +34,7 @@ public:
 
 
 					//createChunk(CHUNK_OFFSET(f.x + x, f.y + y, f.z + z));
-					createChunk(CHUNK_OFFSET(f.x + x, f.y + y, f.z + z));
+					createChunk(CHUNK_OFFSET(f.x + x,0, f.z + z));
 				}
 			}
 		}
@@ -145,7 +146,7 @@ public:
 private:
 	std::unordered_map<std::string, std::shared_ptr<Chunk>> m_allChunks;
 	
-	int worldSize = 2;
+	int worldSize = 5;
 };
 
 

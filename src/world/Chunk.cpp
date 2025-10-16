@@ -18,7 +18,7 @@ Chunk::Chunk(CHUNK_OFFSET chunkoffset)
 	: m_chunkOffset(chunkoffset)
 {
 	glCreateVertexArrays(1, &m_VAO);
-	glCreateBuffers(NUM_BUFFERS, &m_vb);
+	glCreateBuffers(1, &m_vb);
 
 
 
@@ -79,16 +79,13 @@ void Chunk::generateMap()
 	FastNoiseLite noise;
 	float chunkHeightMap[CHUNK_AREA];
 
-	for (int x = 0; x < CHUNK_LEN; x++)
+	for (uint32_t x = 0; x < CHUNK_LEN; x++)
 	{
-		for (int z = 0; z < CHUNK_LEN; z++)
+		for (uint32_t z = 0; z < CHUNK_LEN; z++)
 		{
-			int index = getBlockIndex2D(x, z);
-			//chunkHeightMap->push_back(noise.GetNoise(x + chunkPos.x, z + chunkPos.z) *CHUNK_LEN);
-			//chunkHeightMap->at(index) = noise.GetNoise(x + chunkPos.x, z + chunkPos.z);
-			chunkHeightMap[index] = noise.GetNoise(x + chunkPos.x, z + chunkPos.z)*CHUNK_LEN;
-			//chunkHeightMap->insert(index, noise.GetNoise(x + chunkPos.x, z + chunkPos.z));
+			uint32_t index = getBlockIndex2D(x, z);
 
+			chunkHeightMap[index] = noise.GetNoise(x + chunkPos.x, z + chunkPos.z)* 15.0f + 17.0f;
 
 
 
@@ -106,8 +103,18 @@ void Chunk::generateMap()
 
 			// TODO check this in ddebug
 
-			std::bitset<CHUNK_LEN> buf = ~0 << (uint32_t)chunkHeightMap[index];
-			m_active.at(x).at(z) = buf >> (uint32_t)chunkHeightMap[index];
+			//std::bitset<CHUNK_LEN> buf = (~0) << (uint32_t)chunkHeightMap[index];
+			//m_active.at(x).at(z) = buf >> (uint32_t)chunkHeightMap[index];
+
+			for (uint32_t y = 0; y < CHUNK_LEN; y++)
+			{
+				if (y < chunkHeightMap[index])
+					m_active.at(x).at(z)[y] = 1;
+			}
+
+			//for (uint32_t y = 0; y < CHUNK_LEN; y++)
+				//m_active.at(x).at(z)[y] = 1;
+
 		}
 	}
 
@@ -115,49 +122,34 @@ void Chunk::generateMap()
 
 void Chunk::bakeCore()
 {
-	bool shouldDraw = false;
+	
+
 	for (uint32_t x = 0; x < CHUNK_LEN; x++)
 	{
 		for (uint32_t y = 0; y < CHUNK_LEN; y++)
 		{
 			for (uint32_t z = 0; z < CHUNK_LEN; z++)
 			{
-				shouldDraw = false;
+				bool shouldDraw = false;
 
-				if (m_active.at(x).at(z) != 0) // skip inactive
-				{
+
+				// skip inactive
+				if (m_active.at(x).at(z)[y] == 0)
 					continue;
-				}
 
-				if (x == 0 || x == CHUNK_LEN - 1 || y == 0 || y == CHUNK_LEN - 1 || z == 0 || z == CHUNK_LEN - 1)
+				// draw if core
+				if (x > 0 && x < CHUNK_LEN - 1 && z > 0 && z < CHUNK_LEN - 1 && y > 0 && y < CHUNK_LEN - 1)
+					if (m_active.at(x - 1).at(z)[y] == 0 || 
+						m_active.at(x + 1).at(z)[y] == 0 ||
+						m_active.at(x).at(z)[y - 1] == 0 ||
+						m_active.at(x).at(z)[y + 1] == 0 ||
+						m_active.at(x).at(z - 1)[y] == 0 ||
+						m_active.at(x).at(z + 1)[y] == 0)
+							createCoreBlock(x, y, z);
+
+
+				if (shouldDraw)
 				{
-					shouldDraw = true; // this renders the chunk borders
-					// this is unnecessary in general but im doing rn to see progress
-				}
-				else
-				{
-/*					shouldDraw =
-						((!m_blocks.at(getBlockIndex3D(x - 1, y, z)).isSolidBlock()) ||
-							(!m_blocks.at(getBlockIndex3D(x + 1, y, z)).isSolidBlock()) ||
-							(!m_blocks.at(getBlockIndex3D(x, y - 1, z)).isSolidBlock()) ||
-							(!m_blocks.at(getBlockIndex3D(x, y + 1, z)).isSolidBlock()) ||
-							(!m_blocks.at(getBlockIndex3D(x, y, z - 1)).isSolidBlock()) ||
-							(!m_blocks.at(getBlockIndex3D(x, y, z + 1)).isSolidBlock()));*/ // this here makes it so the blocks render if even just 1 face is visable 
-					// should prob make a way to get rid of extra hidden faces, maybe send the visable faces to the vert shader and only render the ones that are
-
-
-					shouldDraw =
-						((m_active.at(x - 1).at(z)[y] != 0) ||
-							(m_active.at(x + 1).at(z)[y] != 0) ||
-							(m_active.at(x).at(z)[y - 1] != 0) ||
-							(m_active.at(x).at(z)[y + 1] != 0) ||
-							(m_active.at(x).at(z - 1)[y] != 0) ||
-							(m_active.at(x).at(z + 1)[y] != 0));
-				}
-
-				if (shouldDraw && (m_active.at(x).at(z)[y] != 0))
-				{
-					createCoreBlock(x, y, z);
 				}
 			}
 		}
@@ -167,6 +159,9 @@ void Chunk::bakeCore()
 void Chunk::bakeBorder(Faces direction, bool* blockStates)
 {
 	// the 'direction' is which direction the data is applied to
+
+
+
 
 	switch (direction)
 	{
@@ -181,8 +176,16 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				uint32_t index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if ((m_active.at(x).at(z)[y] == 0) && !blockStates[getBlockIndex2D(y, z)])
-					createBorderBlock(direction, x, y, z);
+				if (m_active.at(x).at(z)[y] == 1)
+				{
+					loadFaceNegativeX(x, y, z);
+					loadFacePositiveX(x, y, z);
+					loadFaceNegativeY(x, y, z);
+					loadFacePositiveY(x, y, z);
+					loadFaceNegativeZ(x, y, z);
+					loadFacePositiveZ(x, y, z);
+				}
+					//createBorderBlock(direction, x, y, z);
 			}
 		}
 
@@ -199,8 +202,16 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				int index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if ((m_active.at(x).at(z)[y] == 0) && !blockStates[getBlockIndex2D(y, z)])
-					createBorderBlock(direction, x, y, z);
+				if (m_active.at(x).at(z)[y] == 1)
+				{
+					loadFaceNegativeX(x, y, z);
+					loadFacePositiveX(x, y, z);
+					loadFaceNegativeY(x, y, z);
+					loadFacePositiveY(x, y, z);
+					loadFaceNegativeZ(x, y, z);
+					loadFacePositiveZ(x, y, z);
+				}
+					//createBorderBlock(direction, x, y, z);
 			}
 		}
 
@@ -217,8 +228,16 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				int index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if ((m_active.at(x).at(z)[y] == 0) && !blockStates[getBlockIndex2D(x, z)])
-					createBorderBlock(direction, x, y, z);
+				if (m_active.at(x).at(z)[y] == 0)
+				{
+					loadFaceNegativeX(x, y, z);
+					loadFacePositiveX(x, y, z);
+					loadFaceNegativeY(x, y, z);
+					loadFacePositiveY(x, y, z);
+					loadFaceNegativeZ(x, y, z);
+					loadFacePositiveZ(x, y, z);
+				}
+					//createBorderBlock(direction, x, y, z);
 			}
 		}
 
@@ -235,8 +254,16 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				int index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if ((m_active.at(x).at(z)[y] == 0) && !blockStates[getBlockIndex2D(x, z)])
-					createBorderBlock(direction, x, y, z);
+				if (m_active.at(x).at(z)[y] == 0)
+				{
+					loadFaceNegativeX(x, y, z);
+					loadFacePositiveX(x, y, z);
+					loadFaceNegativeY(x, y, z);
+					loadFacePositiveY(x, y, z);
+					loadFaceNegativeZ(x, y, z);
+					loadFacePositiveZ(x, y, z);
+				}
+					//createBorderBlock(direction, x, y, z);
 			}
 		}
 
@@ -253,8 +280,16 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				int index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if ((m_active.at(x).at(z)[y] == 0) && !blockStates[getBlockIndex2D(x, y)])
-					createBorderBlock(direction, x, y, z);
+				if (m_active.at(x).at(z)[y] == 1)
+				{
+					loadFaceNegativeX(x, y, z);
+					loadFacePositiveX(x, y, z);
+					loadFaceNegativeY(x, y, z);
+					loadFacePositiveY(x, y, z);
+					loadFaceNegativeZ(x, y, z);
+					loadFacePositiveZ(x, y, z);
+				}
+					//createBorderBlock(direction, x, y, z);
 			}
 		}
 
@@ -271,8 +306,16 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				int index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if ((m_active.at(x).at(z)[y] == 0) && !blockStates[getBlockIndex2D(x, y)])
-					createBorderBlock(direction, x, y, z);
+				if (m_active.at(x).at(z)[y] == 1)
+				{
+					loadFaceNegativeX(x, y, z);
+					loadFacePositiveX(x, y, z);
+					loadFaceNegativeY(x, y, z);
+					loadFacePositiveY(x, y, z);
+					loadFaceNegativeZ(x, y, z);
+					loadFacePositiveZ(x, y, z);
+				}
+					//createBorderBlock(direction, x, y, z);
 			}
 		}
 
@@ -297,12 +340,12 @@ bool Chunk::coreBlockHasExposedFaces(int x, int y, int z) const
 	//	(!m_blocks.at(getBlockIndex3D(x, y, z + 1)).isSolidBlock())
 	//	);
 	return (
-		(m_active.at(x - 1).at(z)[y] != 0) ||
-		(m_active.at(x + 1).at(z)[y] != 0) ||
-		(m_active.at(x).at(z)[y - 1] != 0) ||
-		(m_active.at(x).at(z)[y + 1] != 0) ||
-		(m_active.at(x).at(z - 1)[y] != 0) ||
-		(m_active.at(x).at(z + 1)[y] != 0)
+		(m_active.at(x - 1).at(z)[y] == 0) ||
+		(m_active.at(x + 1).at(z)[y] == 0) ||
+		(m_active.at(x).at(z)[y - 1] == 0) ||
+		(m_active.at(x).at(z)[y + 1] == 0) ||
+		(m_active.at(x).at(z - 1)[y] == 0) ||
+		(m_active.at(x).at(z + 1)[y] == 0)
 		);
 }
 
@@ -323,7 +366,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(y, z);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y] != 0;
+					blockStates[index2D] = m_active.at(x).at(z)[y];
 				}
 			}
 
@@ -340,7 +383,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(y, z);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y] != 0;
+					blockStates[index2D] = m_active.at(x).at(z)[y];
 				}
 			}
 
@@ -357,7 +400,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(x, z);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y] != 0;
+					blockStates[index2D] = m_active.at(x).at(z)[y];
 				}
 			}
 			break;
@@ -373,7 +416,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(x, z);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y] != 0;
+					blockStates[index2D] = m_active.at(x).at(z)[y];
 				}
 			}
 			break;
@@ -389,7 +432,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(x, y);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y] != 0;
+					blockStates[index2D] = m_active.at(x).at(z)[y];
 				}
 			}
 
@@ -406,7 +449,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(x, y);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y] != 0;
+					blockStates[index2D] = m_active.at(x).at(z)[y];
 				}
 			}
 
@@ -479,12 +522,12 @@ int Chunk::getBlockIndex2D(int x, int y) const
 
 void Chunk::createCoreBlock(int x, int y, int z)
 {
-	if (x - 1 >= 0			&&	m_active.at(x - 1).at(z)[y] != 0) { loadFaceNegativeX(x, y, z); } // neg x
-	if (x + 1 <	CHUNK_LEN	&&	m_active.at(x + 1).at(z)[y] != 0) { loadFacePositiveX(x, y, z); } // pos x
-	if (y - 1 >= 0			&&	m_active.at(x).at(z)[y - 1] != 0) { loadFaceNegativeY(x, y, z); } // neg y
-	if (y + 1 < CHUNK_LEN	&&	m_active.at(x).at(z)[y + 1] != 0) { loadFacePositiveY(x, y, z); } // pos y
-	if (z - 1 >= 0			&&	m_active.at(x).at(z - 1)[y] != 0) { loadFaceNegativeZ(x, y, z); } // neg z
-	if (z + 1 < CHUNK_LEN	&&	m_active.at(x).at(z + 1)[y] != 0) { loadFacePositiveZ(x, y, z); } // pos z
+	if (x - 1 >= 0			&&	m_active.at(x - 1).at(z)[y] == 0) { loadFaceNegativeX(x, y, z); } // neg x
+	if (x + 1 <	CHUNK_LEN	&&	m_active.at(x + 1).at(z)[y] == 0) { loadFacePositiveX(x, y, z); } // pos x
+	if (y - 1 >= 0			&&	m_active.at(x).at(z)[y - 1] == 0) { loadFaceNegativeY(x, y, z); } // neg y
+	if (y + 1 < CHUNK_LEN	&&	m_active.at(x).at(z)[y + 1] == 0) { loadFacePositiveY(x, y, z); } // pos y
+	if (z - 1 >= 0			&&	m_active.at(x).at(z - 1)[y] == 0) { loadFaceNegativeZ(x, y, z); } // neg z
+	if (z + 1 < CHUNK_LEN	&&	m_active.at(x).at(z + 1)[y] == 0) { loadFacePositiveZ(x, y, z); } // pos z
 }
 
 void Chunk::createBorderBlock(Faces direction, int x, int y, int z)
