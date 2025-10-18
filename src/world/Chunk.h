@@ -19,20 +19,15 @@
 
 struct Vertex
 {
-	Vertex(glm::vec3 pos, glm::vec3 color, glm::vec3 offset, glm::vec2 texCoord)
-		: x(pos.x), y(pos.y), z(pos.z), color(color)//, offset(offset), texCoord(texCoord)
+	Vertex(glm::vec3 pos, glm::vec3 norm, glm::vec2 texCoord)
+		: pos(pos), norm(norm), texCoord(texCoord)
 	{
 
 	}
 
-	float x;
-	float y;
-	float z;
-
-	//glm::vec3 pos;
-	glm::vec3 color;
-	//glm::vec3 offset;
-	//glm::vec2 texCoord;
+	glm::vec3 pos;
+	glm::vec3 norm;
+	glm::vec2 texCoord;
 };
 
 

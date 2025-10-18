@@ -1,14 +1,14 @@
-// #shader vertex
-#version 330 core
+#version 450 core
+
 layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aFrag;
-layout (location = 2) in vec3 aOffset;
-layout (location = 3) in vec2 aTexCoord;
+layout (location = 1) in vec3 aNorm;
+layout (location = 2) in vec2 aTexCoord;
 
 vec3 calculateBlockOffset();
 
-out vec4 fColor;
-out vec4 fTexCoord;
+out vec3 fPos;
+out vec3 fNorm;
+out vec2 fTexCoord;
 
 uniform mat4 projection;
 uniform mat4 view;
@@ -22,7 +22,7 @@ void main()
 	float chunkDisplacement = 2; //this is the distance between each chunk
 
 	vec3 chunkPos = chunkOffset * chunkSize * chunkDisplacement; // chunkOffset * chunkSize gives the true chunk position
-//	vec3 blockPos = aOffset + (chunkPos * chunkDisplacement); // true block pos; 
+	// vec3 blockPos = aOffset + (chunkPos * chunkDisplacement); // true block pos; 
 	// the `* 2` is cause the chunks intersect each other by default
 	
 
@@ -31,8 +31,10 @@ void main()
 	
 	
 	gl_Position = projection * view * globalPos;
-	fColor = vec4(aFrag, 1.0);
-	fTexCoord = vec4(aTexCoord, 1.0, 1.0);
+
+	fPos = aPos;
+	fNorm = aNorm;
+	fTexCoord = aTexCoord;
 }
 
 // calculates the block offset based on its rendering position (or instance index) from the chunk's origin

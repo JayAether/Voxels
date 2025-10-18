@@ -16,10 +16,14 @@ message ("Version: ${VERSION}")
 
 
 # Configure Source & Binary Directories -----------------------------------------------------------
-set (PROJECT_ROOT "${PROJECT_SOURCE_DIR}")
-set (PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
-set (PROJECT_BINARY_DIR "${PROJECT_BINARY_DIR}/bin")
+set (PROJECT_ROOT			"${PROJECT_SOURCE_DIR}")
+set (PROJECT_EXTERNAL_DIR	"${PROJECT_SOURCE_DIR}/3rdparty")
+set (PROJECT_RESOURCES_DIR	"${PROJECT_SOURCE_DIR}/res")
+set (PROJECT_SOURCE_DIR		"${PROJECT_SOURCE_DIR}/src")
+set (PROJECT_BINARY_DIR		"${PROJECT_BINARY_DIR}/bin")
 message ("Source path: ${PROJECT_SOURCE_DIR}")
+message ("External path: ${PROJECT_EXTERNAL_DIR}")
+message ("Resources path: ${PROJECT_RESOURCES_DIR}")
 message ("Binary path: ${PROJECT_BINARY_DIR}")
 
 
@@ -33,35 +37,19 @@ message ("Binary path: ${PROJECT_BINARY_DIR}")
 
 include_directories ("include" "3rdparty")
 
+
 # Add source to this project's executable.
 #file(GLOB_RECURSE SRC_FILES "src/*.cpp")
 #file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.c")
 #file(GLOB_RECURSE SRC_FILES "src/*.h")
 #file(GLOB_RECURSE SRC_FILES "src/*.c")
 
-add_executable (Voxels "src/main.cpp" "src/glad.c" "${PROJECT_SOURCE_DIR}/engine/Engine.cpp" 
-	"${PROJECT_SOURCE_DIR}/engine/Engine.h" "${PROJECT_SOURCE_DIR}/engine/Keyboard.cpp"
-	"${PROJECT_SOURCE_DIR}/engine/Keyboard.h" "${PROJECT_SOURCE_DIR}/engine/ShaderProgram.cpp"
-	"${PROJECT_SOURCE_DIR}/engine/ShaderProgram.h" "${PROJECT_SOURCE_DIR}/engine/graphics/Camera.cpp"
-	"${PROJECT_SOURCE_DIR}/engine/graphics/Camera.h" "${PROJECT_SOURCE_DIR}/engine/graphics/Shader.cpp"
-	"${PROJECT_SOURCE_DIR}/engine/graphics/Shader.h" 
-	 
-	"${PROJECT_SOURCE_DIR}/engine/graphics/Window.cpp"
-	"${PROJECT_SOURCE_DIR}/engine/graphics/Window.h" 
-	 
-	"${PROJECT_SOURCE_DIR}/world/Chunk.cpp"
-	"${PROJECT_SOURCE_DIR}/world/Chunk.h" "${PROJECT_SOURCE_DIR}/world/World.cpp"
-	"${PROJECT_SOURCE_DIR}/world/World.h" "${PROJECT_SOURCE_DIR}/world/voxels/Block.cpp"
-	"${PROJECT_SOURCE_DIR}/world/voxels/Block.h" "${PROJECT_SOURCE_DIR}/world/voxels/BlockDataKeyword.h"
-	"${PROJECT_SOURCE_DIR}/world/voxels/BlockID.H" "${PROJECT_SOURCE_DIR}/world/voxels/Source.cpp"
-	"${PROJECT_SOURCE_DIR}/Mesh_old.cpp" "${PROJECT_SOURCE_DIR}/Mesh_old.h"
-	"${PROJECT_SOURCE_DIR}/Player.cpp" "${PROJECT_SOURCE_DIR}/Player.h"
-	"${PROJECT_SOURCE_DIR}/Refrences.cpp" "${PROJECT_SOURCE_DIR}/Refrences.h"
-	) 
+add_executable (Voxels "src/main.cpp" "${PROJECT_SOURCE_DIR}/voxel_unity.cpp" "${PROJECT_EXTERNAL_DIR}/glad.c" "${PROJECT_EXTERNAL_DIR}/stb_image.cpp")
+
 
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET Voxels PROPERTY CXX_STANDARD 20)
+  set_property(TARGET Voxels PROPERTY CXX_STANDARD 23)
 endif()
 
 # TODO: Add tests and install targets if needed.

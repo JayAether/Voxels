@@ -146,7 +146,7 @@ public:
 private:
 	std::unordered_map<std::string, std::shared_ptr<Chunk>> m_allChunks;
 	
-	int worldSize = 5;
+	int worldSize = 7;
 };
 
 

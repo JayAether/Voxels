@@ -486,8 +486,8 @@ void Chunk::populateBuffers()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(1 * sizeof(glm::vec3)));
 
-	//glEnableVertexAttribArray(2);
-	//glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2 * sizeof(glm::vec3)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2 * sizeof(glm::vec3)));
 
 	//glEnableVertexAttribArray(3);
 	//glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(glm::vec3)));
@@ -567,12 +567,12 @@ void Chunk::loadFaceNegativeX(int x, int y, int z)
 	//Vertex v1 = Vertex(topLeft, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 1));
 
 
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
-	m_data.push_back(Vertex(topLeft, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 1)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
-	m_data.push_back(Vertex(bottomRight, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(1, 0)));
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+	m_data.push_back(Vertex(topLeft,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(bottomRight,	glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
 }
 
 void Chunk::loadFacePositiveX(int x, int y, int z)
@@ -582,12 +582,12 @@ void Chunk::loadFacePositiveX(int x, int y, int z)
 	glm::vec3 bottomRight(x * 2 + Block::BLOCK_RENDER_SIZE, y * 2 - Block::BLOCK_RENDER_SIZE, z * 2 - Block::BLOCK_RENDER_SIZE);
 	glm::vec3 topRight(x * 2 + Block::BLOCK_RENDER_SIZE, y * 2 + Block::BLOCK_RENDER_SIZE, z * 2 - Block::BLOCK_RENDER_SIZE);
 
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
-	m_data.push_back(Vertex(topLeft, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(1, 0)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
-	m_data.push_back(Vertex(bottomRight, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 1)));
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+	m_data.push_back(Vertex(topLeft,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(bottomRight,	glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
 
 }
 
@@ -598,12 +598,12 @@ void Chunk::loadFaceNegativeY(int x, int y, int z)
 	glm::vec3 bottomRight(x * 2 + Block::BLOCK_RENDER_SIZE, y * 2 - Block::BLOCK_RENDER_SIZE, z * 2 - Block::BLOCK_RENDER_SIZE);
 	glm::vec3 bottomLeft(x * 2 - Block::BLOCK_RENDER_SIZE, y * 2 - Block::BLOCK_RENDER_SIZE, z * 2 - Block::BLOCK_RENDER_SIZE);
 
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
-	m_data.push_back(Vertex(topLeft, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(1, 0)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
-	m_data.push_back(Vertex(bottomRight, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 1)));
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+	m_data.push_back(Vertex(topLeft,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(bottomRight,	glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
 }
 
 void Chunk::loadFacePositiveY(int x, int y, int z)
@@ -613,12 +613,12 @@ void Chunk::loadFacePositiveY(int x, int y, int z)
 	glm::vec3 topLeft(x * 2 - Block::BLOCK_RENDER_SIZE, y * 2 + Block::BLOCK_RENDER_SIZE, z * 2 - Block::BLOCK_RENDER_SIZE);
 	glm::vec3 topRight(x * 2 + Block::BLOCK_RENDER_SIZE, y * 2 + Block::BLOCK_RENDER_SIZE, z * 2 - Block::BLOCK_RENDER_SIZE);
 
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
-	m_data.push_back(Vertex(topLeft, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(1, 0)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
-	m_data.push_back(Vertex(bottomRight, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 1)));
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+	m_data.push_back(Vertex(topLeft,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(bottomRight,	glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
 
 }
 
@@ -629,12 +629,12 @@ void Chunk::loadFaceNegativeZ(int x, int y, int z)
 	glm::vec3 topRight(x * 2 - Block::BLOCK_RENDER_SIZE, y * 2 + Block::BLOCK_RENDER_SIZE, z * 2 - Block::BLOCK_RENDER_SIZE);
 	glm::vec3 topLeft(x * 2 + Block::BLOCK_RENDER_SIZE, y * 2 + Block::BLOCK_RENDER_SIZE, z * 2 - Block::BLOCK_RENDER_SIZE);
 
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
-	m_data.push_back(Vertex(topLeft, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(1, 0)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
-	m_data.push_back(Vertex(bottomRight, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 1)));
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 0.0f)));
+	m_data.push_back(Vertex(topLeft,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(bottomRight,	glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 0.0f)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 0.0f)));
 }
 
 void Chunk::loadFacePositiveZ(int x, int y, int z)
@@ -644,10 +644,10 @@ void Chunk::loadFacePositiveZ(int x, int y, int z)
 	glm::vec3 topRight(x * 2 + Block::BLOCK_RENDER_SIZE, y * 2 + Block::BLOCK_RENDER_SIZE, z * 2 + Block::BLOCK_RENDER_SIZE);
 	glm::vec3 topLeft(x * 2 - Block::BLOCK_RENDER_SIZE, y * 2 + Block::BLOCK_RENDER_SIZE, z * 2 + Block::BLOCK_RENDER_SIZE);
 
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
-	m_data.push_back(Vertex(topLeft, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 1)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
-	m_data.push_back(Vertex(topRight, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(x, y, z), glm::vec2(1, 1)));
-	m_data.push_back(Vertex(bottomRight, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(1, 0)));
-	m_data.push_back(Vertex(bottomLeft, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 0)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)));
+	m_data.push_back(Vertex(topLeft,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)));
+	m_data.push_back(Vertex(bottomRight,	glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)));
+	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)));
 }
