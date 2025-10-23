@@ -1,0 +1,17 @@
+{
+  "name": "grass_block",
+  "id": 0,
+  "textures": {
+    "positive_x": { "diffuse": "grass_block_diffuse.png" },
+    "negative_x": { "diffuse": "grass_block_diffuse.png" },
+    "positive_y": { "diffuse": "grass_block_diffuse.png" },
+    "negative_y": { "diffuse": "grass_block_diffuse.png" },
+    "positive_z": { "diffuse": "grass_block_diffuse.png" },
+    "negative_z": { "diffuse": "grass_block_diffuse.png" }
+  },
+  "shaders": {
+    "ver": "block.vert",
+    "frag": "block.frag"
+  },
+  "tags": ["static"]
+}

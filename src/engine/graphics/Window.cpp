@@ -1,119 +1,118 @@
 #include "Window.h"
 
-#include "../../Refrences.h"
-
-namespace fff
+namespace engine
 {
-	static void mouseFollow_callback(GLFWwindow* window, double xposIn, double yposIn)
+	namespace graphics
 	{
-		float xpos = static_cast<float>(xposIn);
-		float ypos = static_cast<float>(yposIn);
-
-		if (g_camera->firstMouse)
+		struct graphics_internal
 		{
-			g_camera->lastX = xpos;
-			g_camera->lastY = ypos;
-			g_camera->firstMouse = false;
+			std::string scrTitle;
+			GLFWwindow* context;
+			int scrWidth, scrHeight;
+		};
+
+		static graphics_internal _window;
+
+		bool initGlfw();
+
+
+
+
+
+
+		bool initWindow(std::string title, int width, int height)
+		{
+			_window.scrTitle = title;
+			_window.scrWidth = width;
+			_window.scrHeight = height;
+			
+			if (!initGlfw())
+			{
+				std::cout << "ERROR - failed to init glfw\n";
+				return false;
+			}
+
+			_window.context = glfwCreateWindow(_window.scrWidth, _window.scrHeight, _window.scrTitle.c_str(), nullptr, nullptr);
+			if (!_window.context)
+			{
+				std::cout << "ERROR - failed to create glfw window\n";
+				return false;
+			}
+
+			glfwMakeContextCurrent(_window.context);
+
+
+			return true;
 		}
 
-		float xoffset = xpos - g_camera->lastX;
-		float yoffset = g_camera->lastY - ypos; // reversed since y-coordinates go from bottom to top
-		g_camera->lastX = xpos;
-		g_camera->lastY = ypos;
+		void terminate()
+		{
+			glfwTerminate();
+		}
 
-		float sensitivity = 0.1f; // change this value to your liking
-		xoffset *= sensitivity;
-		yoffset *= sensitivity;
+		void setMouseCallback(GLFWcursorposfun callback)
+		{
+			glfwSetCursorPosCallback(_window.context, callback);
+		}
 
-		g_camera->yaw += xoffset;
-		g_camera->pitch += yoffset;
+		GLFWwindow* getContext()
+		{
+			return _window.context;
+		}
 
-		// make sure that when pitch is out of bounds, screen doesn't get flipped
-		if (g_camera->pitch > 89.0f)
-			g_camera->pitch = 89.0f;
-		if (g_camera->pitch < -89.0f)
-			g_camera->pitch = -89.0f;
+		void setScrTitle(std::string title)
+		{
+			_window.scrTitle = title;
 
-		glm::vec3 front;
-		front.x = cos(glm::radians(g_camera->yaw)) * cos(glm::radians(g_camera->pitch));
-		front.y = sin(glm::radians(g_camera->pitch));
-		front.z = sin(glm::radians(g_camera->yaw)) * cos(glm::radians(g_camera->pitch));
-		g_camera->orientation = glm::normalize(front);
-	}
-};
+			glfwSetWindowTitle(_window.context, _window.scrTitle.c_str());
+		}
+
+		void setScrWidth(int width)
+		{
+			_window.scrWidth = width;
+
+			glfwSetWindowSize(_window.context, _window.scrWidth, _window.scrHeight);
+		}
+
+		void setScrHeight(int height)
+		{
+			_window.scrHeight = height;
+
+			glfwSetWindowSize(_window.context, _window.scrWidth, _window.scrHeight);
+		}
+
+		void setMouse(mouse_mode mode)
+		{
+			switch (mode)
+			{
+			case mouse_mode::NORMAL:
+				glfwSetInputMode(_window.context, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				break;
+			case mouse_mode::HIDDEN:
+				glfwSetInputMode(_window.context, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+				break;
+			case mouse_mode::DISABLED:
+				glfwSetInputMode(_window.context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				break;
+			}
+		}
 
 
+		bool initGlfw()
+		{
+			//int initVal = ;
+			if (!glfwInit())
+				return false;
 
-Window::Window(std::string windowTitle)
-	: m_windowTitle(windowTitle), m_scrWidth(640), m_scrHeight(480)
-{
+			glfwWindowHint(GLFW_VERSION_MAJOR, 3);
+			glfwWindowHint(GLFW_VERSION_MINOR, 4);
+			glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
+			//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	m_window = glfwCreateWindow(m_scrWidth, m_scrHeight, m_windowTitle.c_str(), NULL, NULL);
-	if (!m_window)
-	{
-		throw std::exception("failed to load window");
-		return;
-	}
-
-	glfwMakeContextCurrent(m_window);
-	glfwSetWindowUserPointer(m_window, this);
-
-
-	mouseTracingMode(true);
-
-	//glViewport(0, 0, m_scrWidth, m_scrHeight);
-
-
-}
-
-
-void Window::updateWindowSize(int width, int height)
-{
-	glfwSetWindowSize(m_window, width, height);
-	//glViewport(0, 0, width, height);
-
-	m_scrWidth = width;
-	m_scrHeight = height;
-}
-
-void Window::updateWindowTitle(std::string name)
-{
-	m_windowTitle = name;
-	glfwSetWindowTitle(m_window, name.c_str());
-}
-
-void Window::updateWindowTitle(const char* name)
-{
-	m_windowTitle = name;
-	glfwSetWindowTitle(m_window, name);
-}
-
-void Window::mouseTracingMode(bool mode)
-{
-	if (mode)
-	{
-		glfwSetCursorPosCallback(m_window, fff::mouseFollow_callback);
-		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	}
-	else
-	{
-		glfwSetCursorPosCallback(m_window, NULL);
-		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
+			return true;
+		}
 	}
 }
 
 
-float Window::getScrWidth()
-{
-	return m_scrWidth;
-}
 
-float Window::getScrHeight()
-{
-	return m_scrHeight;
-}
-
-GLFWwindow* Window::getWindow() const
-{
-	return m_window;
-}

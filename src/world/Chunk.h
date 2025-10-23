@@ -2,10 +2,10 @@
 
 
 #include "../engine/ShaderProgram.h"
-#include "voxels/Block.h"
 
 #include <bitset>
-#include <memory>
+
+
 
 #define CHUNK_OFFSET glm::ivec3 
 
@@ -76,12 +76,13 @@ public:
 
 	CHUNK_OFFSET getChunkOffset() const;
 
-
+	inline static double BLOCK_RENDER_SIZE = 1.0;
+	enum BlockID;
 private:
 	int getBlockIndex3D(int x, int y, int z) const;
 	int getBlockIndex2D(int x, int y) const;
 
-	void setBlock(BlockID blockType, int x, int y, int z);
+	//void setBlock(BlockID blockType, int x, int y, int z);
 
 	void createCoreBlock(int x, int y, int z);
 	void createBorderBlock(Faces direction, int x, int y, int z);

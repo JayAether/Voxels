@@ -1,3 +1,0 @@
-ID_DATA_KEY =2
-SHADER_PATH_DATA_KEY =
-TEXTURE_PATH_DATA_KEY =Voxels\res\textures\Stone_Block_Texture.png

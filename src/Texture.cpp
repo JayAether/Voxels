@@ -35,13 +35,6 @@ TextureError Texture::loadTexture(std::string filepath)
 	glTextureStorage2D(m_id, 1, GL_RGB8, m_width, m_height);
 	glTextureSubImage2D(m_id, 0, 0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, src.value());
 
-	glBindTexture(m_id, GL_TEXTURE_2D);
-
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, src.value());
-
-	glBindTexture(0, GL_TEXTURE_2D);
-
-
 	glGenerateTextureMipmap(m_id);
 
 	stbi_image_free(src.value());
