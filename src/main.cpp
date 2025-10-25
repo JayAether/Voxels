@@ -55,18 +55,17 @@ int main()
     //engine.setDepthTest(true);
     //engine.setOpenglDebugOutput(true);
 
-	engine::updateFrame();
-	std::cout << engine::g_engine.deltaTime << '\n';
-
     Texture stone;
     stone.loadTexture("D:/Voxels/res/textures/container.png");
     stone.bind(0);
 
 	glEnable(GL_DEPTH_TEST);
 
-
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
 
 	world::bakeWorld();
+
 	
 	ShaderProgram voxelProgram("D:\\Voxels\\res\\shaders\\Block.vert", "D:\\Voxels\\res\\shaders\\Block.frag");
 

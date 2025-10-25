@@ -10,8 +10,8 @@
 #include <vector>
 
 
-Chunk::Chunk(CHUNK_OFFSET chunkoffset)
-	: m_chunkOffset(chunkoffset)
+Chunk::Chunk(chunkOffset chunkpos)
+	: m_chunkOffset(chunkpos)
 {
 	glCreateVertexArrays(1, &m_VAO);
 	glCreateBuffers(1, &m_vb);
@@ -47,7 +47,7 @@ Chunk::~Chunk()
 
 void Chunk::render(ShaderProgram program)
 {
-	if (m_data.size() == 0) // this exists so opengl doesnt freakout if chunk is empty
+	if (m_vertData.size() == 0) // this exists so opengl doesnt freakout if chunk is empty
 	{
 		return;
 	}
@@ -61,7 +61,7 @@ void Chunk::render(ShaderProgram program)
 
 	glBindVertexArray(m_VAO);
 
-	glDrawArrays(GL_TRIANGLES, 0, sizeof(m_data[0]) * m_data.size()); // should change the `sizeof(m_data[0]) * m_data.size()` to some sort of variable that keeps track of rendered blocks
+	glDrawArrays(GL_TRIANGLES, 0, sizeof(m_vertData[0]) * m_vertData.size()); // should change the `sizeof(m_data[0]) * m_data.size()` to some sort of variable that keeps track of rendered blocks
 	glBindVertexArray(0);	
 }
 
@@ -105,7 +105,7 @@ void Chunk::generateMap()
 			for (uint32_t y = 0; y < CHUNK_LEN; y++)
 			{
 				if (y < chunkHeightMap[index])
-					m_active.at(x).at(z)[y] = 1;
+					m_active.at(x).at(y)[z] = 1;
 			}
 
 			//for (uint32_t y = 0; y < CHUNK_LEN; y++)
@@ -114,6 +114,108 @@ void Chunk::generateMap()
 		}
 	}
 
+}
+
+void Chunk::bake(std::vector<std::shared_ptr<Chunk>> neighbourChunks)
+{
+	//for (uint32_t x = 1; x < CHUNK_LEN - 1; x++)
+	//{
+	//	for (uint32_t y = 1; y < CHUNK_LEN - 1; y++)
+	//	{
+	//		for (uint32_t z = 1; z < CHUNK_LEN - 1; z++)
+	//		{
+	//			
+	//			if (m_active.at(x).at(y)[z] == 0) continue;
+
+	//			if (m_active.at(x - 1).at(y)[z] == 0) { loadFaceNegativeX(x, y, z); } // neg x
+	//			if (m_active.at(x + 1).at(y)[z] == 0) { loadFacePositiveX(x, y, z); } // pos x
+	//			if (m_active.at(x).at(y - 1)[z] == 0) { loadFaceNegativeY(x, y, z); } // neg y
+	//			if (m_active.at(x).at(y + 1)[z] == 0) { loadFacePositiveY(x, y, z); } // pos y
+	//			if (m_active.at(x).at(y)[z - 1] == 0) { loadFaceNegativeZ(x, y, z); } // neg z
+	//			if (m_active.at(x).at(y)[z + 1] == 0) { loadFacePositiveZ(x, y, z); } // pos z
+	//		}
+	//	}
+	//}
+
+
+	//for (uint32_t k = 0; k < neighbourChunks.size(); k++)
+	//{
+	//	chunkOffset otherChunk = neighbourChunks.at(k)->getChunkOffset() - m_chunkOffset;
+
+	//	for (uint32_t i = 0; i < CHUNK_LEN; i++)
+	//	{
+	//		for (uint32_t j = 0; j < CHUNK_LEN; j++)
+	//		{
+	//			if (otherChunk == glm::ivec3(-1,  0,  0) && neighbourChunks.at(k)->blockStateActive(glm::ivec3(0,			  i, j)))	loadFaceNegativeX(0,			 i, j);
+	//			if (otherChunk == glm::ivec3( 1,  0,  0) && neighbourChunks.at(k)->blockStateActive(glm::ivec3(CHUNK_LEN - 1, i, j)))	loadFacePositiveX(CHUNK_LEN - 1, i, j);
+	//			if (otherChunk == glm::ivec3( 0, -1,  0) && neighbourChunks.at(k)->blockStateActive(glm::ivec3(i, 0,			 j)))	loadFaceNegativeY(i, 0,				j);
+	//			if (otherChunk == glm::ivec3( 0,  1,  0) && neighbourChunks.at(k)->blockStateActive(glm::ivec3(i, CHUNK_LEN - 1, j)))	loadFacePositiveY(i, CHUNK_LEN - 1, j);
+	//			if (otherChunk == glm::ivec3( 0,  0, -1) && neighbourChunks.at(k)->blockStateActive(glm::ivec3(i, j,			 0)))	loadFaceNegativeZ(i, j,				0);
+	//			if (otherChunk == glm::ivec3( 0,  0,  1) && neighbourChunks.at(k)->blockStateActive(glm::ivec3(i, j, CHUNK_LEN - 1)))	loadFacePositiveZ(i, j, CHUNK_LEN - 1);
+	//		}
+	//	}
+	//}
+
+
+	for (uint32_t x = 0; x < CHUNK_LEN; x++)
+	{
+		for (uint32_t y = 0; y < CHUNK_LEN; y++)
+		{
+			for (uint32_t z = 0; z < CHUNK_LEN; z++)
+			{
+
+				if (m_active.at(x).at(y)[z] == 0) continue;
+
+				if (x		> 0			&& m_active.at(x - 1).at(y)[z] == 0) loadFaceNegativeX(x, y, z);  // neg x
+				if (x + 1	< CHUNK_LEN	&& m_active.at(x + 1).at(y)[z] == 0) loadFacePositiveX(x, y, z);  // pos x
+				if (y		> 0			&& m_active.at(x).at(y - 1)[z] == 0) loadFaceNegativeY(x, y, z);  // neg y
+				if (y + 1	< CHUNK_LEN	&& m_active.at(x).at(y + 1)[z] == 0) loadFacePositiveY(x, y, z);  // pos y
+				if (z		> 0			&& m_active.at(x).at(y)[z - 1] == 0) loadFaceNegativeZ(x, y, z);  // neg z
+				if (z + 1	< CHUNK_LEN	&& m_active.at(x).at(y)[z + 1] == 0) loadFacePositiveZ(x, y, z);  // pos z
+			}
+		}
+	}
+
+
+	for (uint32_t k = 0; k < neighbourChunks.size(); k++)
+	{
+		chunkOffset otherChunk = neighbourChunks.at(k)->getChunkOffset() - m_chunkOffset;
+
+		for (uint32_t i = 0; i < CHUNK_LEN; i++)
+		{
+			for (uint32_t j = 0; j < CHUNK_LEN; j++)
+			{
+				//if (otherChunk == glm::ivec3(-1,  0,  0) && m_active.at(0).at(i)[j] == 0				&& neighbourChunks.at(k)->blockStateActive(glm::ivec3(CHUNK_LEN - 1, i, j)))	loadFaceNegativeX(0, i, j);
+				//if (otherChunk == glm::ivec3( 1,  0,  0) && m_active.at(CHUNK_LEN - 1).at(i)[j] == 0	&& neighbourChunks.at(k)->blockStateActive(glm::ivec3(0, i, j)))				loadFacePositiveX(CHUNK_LEN - 1, i, j);
+				//if (otherChunk == glm::ivec3( 0, -1,  0) && m_active.at(i).at(0)[j] == 0				&& neighbourChunks.at(k)->blockStateActive(glm::ivec3(i, CHUNK_LEN - 1, j)))	loadFaceNegativeY(i, 0, j);
+				//if (otherChunk == glm::ivec3( 0,  1,  0) && m_active.at(i).at(CHUNK_LEN - 1)[j] == 0	&& neighbourChunks.at(k)->blockStateActive(glm::ivec3(i, 0, j)))				loadFacePositiveY(i, CHUNK_LEN - 1, j);
+				//if (otherChunk == glm::ivec3( 0,  0, -1) && m_active.at(i).at(j)[0] == 0				&& neighbourChunks.at(k)->blockStateActive(glm::ivec3(i, j, CHUNK_LEN - 1)))	loadFaceNegativeZ(i, j, 0);
+				//if (otherChunk == glm::ivec3( 0,  0,  1) && m_active.at(i).at(j)[CHUNK_LEN - 1] == 0	&& neighbourChunks.at(k)->blockStateActive(glm::ivec3(i, j, 0)))				loadFacePositiveZ(i, j, CHUNK_LEN - 1);
+
+
+
+
+				if (otherChunk == glm::ivec3(-1,  0,  0) && m_active.at(0).at(i)[j] == 1 && !neighbourChunks.at(k)->blockStateActive(glm::ivec3(CHUNK_LEN - 1, i, j))) loadFaceNegativeX(0, i, j);
+				if (otherChunk == glm::ivec3( 1,  0,  0) && m_active.at(CHUNK_LEN - 1).at(i)[j] == 1 && !neighbourChunks.at(k)->blockStateActive(glm::ivec3(0, i, j))) loadFacePositiveX(CHUNK_LEN - 1, i, j);
+
+				if (otherChunk == glm::ivec3( 0, -1, 0) && m_active.at(i).at(0)[j] == 1 && !neighbourChunks.at(k)->blockStateActive(glm::ivec3(0, CHUNK_LEN - 1, j))) loadFaceNegativeY(i, 0, j);
+				if (otherChunk == glm::ivec3( 0,  1, 0) && m_active.at(i).at(CHUNK_LEN - 1)[j] == 1 && !neighbourChunks.at(k)->blockStateActive(glm::ivec3(i, 0, j))) loadFacePositiveY(i, CHUNK_LEN - 1, j);
+
+				if (otherChunk == glm::ivec3( 0, 0, -1) && m_active.at(i).at(j)[0] == 1 && !neighbourChunks.at(k)->blockStateActive(glm::ivec3(i, j, CHUNK_LEN - 1))) loadFaceNegativeZ(i, j, 0);
+				if (otherChunk == glm::ivec3( 0, 0,  1) && m_active.at(i).at(j)[CHUNK_LEN - 1] == 1 && !neighbourChunks.at(k)->blockStateActive(glm::ivec3(i, j, 0))) loadFacePositiveZ(i, j, CHUNK_LEN - 1);
+			}
+		}
+	}
+}
+
+bool Chunk::blockStateActive(glm::ivec3 relativeBlockPos)
+{
+	if (relativeBlockPos.x < 0 || relativeBlockPos.x > CHUNK_LEN - 1 ||
+		relativeBlockPos.y < 0 || relativeBlockPos.x > CHUNK_LEN - 1 ||
+		relativeBlockPos.z < 0 || relativeBlockPos.z > CHUNK_LEN - 1)
+		return false;
+
+	return m_active.at(relativeBlockPos.x).at(relativeBlockPos.y)[relativeBlockPos.z];
 }
 
 void Chunk::bakeCore()
@@ -130,17 +232,17 @@ void Chunk::bakeCore()
 
 
 				// skip inactive
-				if (m_active.at(x).at(z)[y] == 0)
+				if (m_active.at(x).at(y)[z] == 0)
 					continue;
 
 				// draw if core
 				if (x > 0 && x < CHUNK_LEN - 1 && z > 0 && z < CHUNK_LEN - 1 && y > 0 && y < CHUNK_LEN - 1)
-					if (m_active.at(x - 1).at(z)[y] == 0 || 
-						m_active.at(x + 1).at(z)[y] == 0 ||
-						m_active.at(x).at(z)[y - 1] == 0 ||
-						m_active.at(x).at(z)[y + 1] == 0 ||
-						m_active.at(x).at(z - 1)[y] == 0 ||
-						m_active.at(x).at(z + 1)[y] == 0)
+					if (m_active.at(x - 1).at(y)[z] == 0 || 
+						m_active.at(x + 1).at(y)[z] == 0 ||
+						m_active.at(x).at(y - 1)[z] == 0 ||
+						m_active.at(x).at(y + 1)[z] == 0 ||
+						m_active.at(x).at(y)[z - 1] == 0 ||
+						m_active.at(x).at(y)[z + 1] == 0)
 							createCoreBlock(x, y, z);
 
 
@@ -172,7 +274,7 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				uint32_t index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if (m_active.at(x).at(z)[y] == 1)
+				if (m_active.at(x).at(y)[z] == 1)
 				{
 					loadFaceNegativeX(x, y, z);
 					loadFacePositiveX(x, y, z);
@@ -198,7 +300,7 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				int index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if (m_active.at(x).at(z)[y] == 1)
+				if (m_active.at(x).at(y)[z] == 1)
 				{
 					loadFaceNegativeX(x, y, z);
 					loadFacePositiveX(x, y, z);
@@ -224,7 +326,7 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				int index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if (m_active.at(x).at(z)[y] == 0)
+				if (m_active.at(x).at(y)[z] == 0)
 				{
 					loadFaceNegativeX(x, y, z);
 					loadFacePositiveX(x, y, z);
@@ -250,7 +352,7 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				int index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if (m_active.at(x).at(z)[y] == 0)
+				if (m_active.at(x).at(y)[z] == 0)
 				{
 					loadFaceNegativeX(x, y, z);
 					loadFacePositiveX(x, y, z);
@@ -276,7 +378,7 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				int index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if (m_active.at(x).at(z)[y] == 1)
+				if (m_active.at(x).at(y)[z] == 1)
 				{
 					loadFaceNegativeX(x, y, z);
 					loadFacePositiveX(x, y, z);
@@ -302,7 +404,7 @@ void Chunk::bakeBorder(Faces direction, bool* blockStates)
 				int index = getBlockIndex3D(x, y, z);
 
 				//bool state = blockStates->at(getBlowckIndex2D(y, z));
-				if (m_active.at(x).at(z)[y] == 1)
+				if (m_active.at(x).at(y)[z] == 1)
 				{
 					loadFaceNegativeX(x, y, z);
 					loadFacePositiveX(x, y, z);
@@ -336,12 +438,12 @@ bool Chunk::coreBlockHasExposedFaces(int x, int y, int z) const
 	//	(!m_blocks.at(getBlockIndex3D(x, y, z + 1)).isSolidBlock())
 	//	);
 	return (
-		(m_active.at(x - 1).at(z)[y] == 0) ||
-		(m_active.at(x + 1).at(z)[y] == 0) ||
-		(m_active.at(x).at(z)[y - 1] == 0) ||
-		(m_active.at(x).at(z)[y + 1] == 0) ||
-		(m_active.at(x).at(z - 1)[y] == 0) ||
-		(m_active.at(x).at(z + 1)[y] == 0)
+		(m_active.at(x - 1).at(y)[z] == 0) ||
+		(m_active.at(x + 1).at(y)[z] == 0) ||
+		(m_active.at(x).at(y)[z - 1] == 0) ||
+		(m_active.at(x).at(y)[z + 1] == 0) ||
+		(m_active.at(x).at(y - 1)[z] == 0) ||
+		(m_active.at(x).at(y + 1)[z] == 0)
 		);
 }
 
@@ -362,7 +464,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(y, z);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y];
+					blockStates[index2D] = m_active.at(x).at(y)[z];
 				}
 			}
 
@@ -379,7 +481,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(y, z);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y];
+					blockStates[index2D] = m_active.at(x).at(y)[z];
 				}
 			}
 
@@ -396,7 +498,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(x, z);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y];
+					blockStates[index2D] = m_active.at(x).at(y)[z];
 				}
 			}
 			break;
@@ -412,7 +514,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(x, z);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y];
+					blockStates[index2D] = m_active.at(x).at(y)[z];
 				}
 			}
 			break;
@@ -428,7 +530,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(x, y);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y];
+					blockStates[index2D] = m_active.at(x).at(y)[z];
 				}
 			}
 
@@ -445,7 +547,7 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 					int index3D = getBlockIndex3D(x, y, z);
 					int index2D = getBlockIndex2D(x, y);
 
-					blockStates[index2D] = m_active.at(x).at(z)[y];
+					blockStates[index2D] = m_active.at(x).at(y)[z];
 				}
 			}
 
@@ -458,12 +560,12 @@ void Chunk::getBorderBlockStates(Faces direction, bool* blockStates) const
 
 void Chunk::clearData()
 {
-	m_data.clear();
+	m_vertData.clear();
 }
 
 void Chunk::populateBuffers()
 {
-	if (m_data.size() == 0) // this exists so opengl doesnt freakout if chunk is empty
+	if (m_vertData.size() == 0) // this exists so opengl doesnt freakout if chunk is empty
 	{
 		return;
 	}
@@ -474,16 +576,16 @@ void Chunk::populateBuffers()
 	//m_vb.setData(&m_data[0], sizeof(m_data[0]) * m_data.size());
 
 	//glNamedBufferStorage(m_vb[POS_BUFFER],)
-	glBufferData(GL_ARRAY_BUFFER, sizeof(m_data[0]) * m_data.size(), m_data.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertData[0]) * m_vertData.size(), m_vertData.data(), GL_STATIC_DRAW);
 
-	glEnableVertexAttribArray(POSITION_LOCATION);
-	glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glEnableVertexAttribArray(shaderVertexPosition);
+	glVertexAttribPointer(shaderVertexPosition, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 	
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(1 * sizeof(glm::vec3)));
+	glEnableVertexAttribArray(shaderVertexNormal);
+	glVertexAttribPointer(shaderVertexNormal, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(1 * sizeof(glm::vec3)));
 
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2 * sizeof(glm::vec3)));
+	glEnableVertexAttribArray(shaderVertexTexCoord);
+	glVertexAttribPointer(shaderVertexTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2 * sizeof(glm::vec3)));
 
 	//glEnableVertexAttribArray(3);
 	//glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(glm::vec3)));
@@ -493,7 +595,7 @@ void Chunk::populateBuffers()
 
 }
 
-CHUNK_OFFSET Chunk::getChunkOffset() const
+chunkOffset Chunk::getChunkOffset() const
 {
 	return m_chunkOffset;
 }
@@ -518,12 +620,12 @@ int Chunk::getBlockIndex2D(int x, int y) const
 
 void Chunk::createCoreBlock(int x, int y, int z)
 {
-	if (x - 1 >= 0			&&	m_active.at(x - 1).at(z)[y] == 0) { loadFaceNegativeX(x, y, z); } // neg x
-	if (x + 1 <	CHUNK_LEN	&&	m_active.at(x + 1).at(z)[y] == 0) { loadFacePositiveX(x, y, z); } // pos x
-	if (y - 1 >= 0			&&	m_active.at(x).at(z)[y - 1] == 0) { loadFaceNegativeY(x, y, z); } // neg y
-	if (y + 1 < CHUNK_LEN	&&	m_active.at(x).at(z)[y + 1] == 0) { loadFacePositiveY(x, y, z); } // pos y
-	if (z - 1 >= 0			&&	m_active.at(x).at(z - 1)[y] == 0) { loadFaceNegativeZ(x, y, z); } // neg z
-	if (z + 1 < CHUNK_LEN	&&	m_active.at(x).at(z + 1)[y] == 0) { loadFacePositiveZ(x, y, z); } // pos z
+	if (x - 1 >= 0			&&	m_active.at(x - 1).at(y)[z] == 0) { loadFaceNegativeX(x, y, z); } // neg x
+	if (x + 1 <	CHUNK_LEN	&&	m_active.at(x + 1).at(y)[z] == 0) { loadFacePositiveX(x, y, z); } // pos x
+	if (y - 1 >= 0			&&	m_active.at(x).at(y - 1)[z] == 0) { loadFaceNegativeY(x, y, z); } // neg y
+	if (y + 1 < CHUNK_LEN	&&	m_active.at(x).at(y + 1)[z] == 0) { loadFacePositiveY(x, y, z); } // pos y
+	if (z - 1 >= 0			&&	m_active.at(x).at(y)[z - 1] == 0) { loadFaceNegativeZ(x, y, z); } // neg z
+	if (z + 1 < CHUNK_LEN	&&	m_active.at(x).at(y)[z + 1] == 0) { loadFacePositiveZ(x, y, z); } // pos z
 }
 
 void Chunk::createBorderBlock(Faces direction, int x, int y, int z)
@@ -563,12 +665,12 @@ void Chunk::loadFaceNegativeX(int x, int y, int z)
 	//Vertex v1 = Vertex(topLeft, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z), glm::vec2(0, 1));
 
 
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
-	m_data.push_back(Vertex(topLeft,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(bottomRight,	glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+	m_vertData.push_back(Vertex(topLeft,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(bottomRight,	glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
 }
 
 void Chunk::loadFacePositiveX(int x, int y, int z)
@@ -578,13 +680,12 @@ void Chunk::loadFacePositiveX(int x, int y, int z)
 	glm::vec3 bottomRight	(x * 2 + BLOCK_RENDER_SIZE, y * 2 - BLOCK_RENDER_SIZE, z * 2 - BLOCK_RENDER_SIZE);
 	glm::vec3 topRight		(x * 2 + BLOCK_RENDER_SIZE, y * 2 + BLOCK_RENDER_SIZE, z * 2 - BLOCK_RENDER_SIZE);
 
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
-	m_data.push_back(Vertex(topLeft,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(bottomRight,	glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
-
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+	m_vertData.push_back(Vertex(topLeft,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(bottomRight,	glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
 }
 
 void Chunk::loadFaceNegativeY(int x, int y, int z)
@@ -594,12 +695,12 @@ void Chunk::loadFaceNegativeY(int x, int y, int z)
 	glm::vec3 bottomRight(x * 2 + BLOCK_RENDER_SIZE, y * 2 - BLOCK_RENDER_SIZE, z * 2 - BLOCK_RENDER_SIZE);
 	glm::vec3 bottomLeft(x * 2 - BLOCK_RENDER_SIZE, y * 2 - BLOCK_RENDER_SIZE, z * 2 - BLOCK_RENDER_SIZE);
 
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
-	m_data.push_back(Vertex(topLeft,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(bottomRight,	glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+	m_vertData.push_back(Vertex(topLeft,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(bottomRight,	glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
 }
 
 void Chunk::loadFacePositiveY(int x, int y, int z)
@@ -609,13 +710,12 @@ void Chunk::loadFacePositiveY(int x, int y, int z)
 	glm::vec3 topLeft		(x * 2 - BLOCK_RENDER_SIZE, y * 2 + BLOCK_RENDER_SIZE, z * 2 - BLOCK_RENDER_SIZE);
 	glm::vec3 topRight		(x * 2 + BLOCK_RENDER_SIZE, y * 2 + BLOCK_RENDER_SIZE, z * 2 - BLOCK_RENDER_SIZE);
 
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
-	m_data.push_back(Vertex(topLeft,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(bottomRight,	glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
-
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+	m_vertData.push_back(Vertex(topLeft,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(bottomRight,	glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 0.0f)));
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
 }
 
 void Chunk::loadFaceNegativeZ(int x, int y, int z)
@@ -625,12 +725,12 @@ void Chunk::loadFaceNegativeZ(int x, int y, int z)
 	glm::vec3 topRight		(x * 2 - BLOCK_RENDER_SIZE, y * 2 + BLOCK_RENDER_SIZE, z * 2 - BLOCK_RENDER_SIZE);
 	glm::vec3 topLeft		(x * 2 + BLOCK_RENDER_SIZE, y * 2 + BLOCK_RENDER_SIZE, z * 2 - BLOCK_RENDER_SIZE);
 
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 0.0f)));
-	m_data.push_back(Vertex(topLeft,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(bottomRight,	glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 0.0f)));
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 0.0f)));
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 0.0f)));
+	m_vertData.push_back(Vertex(topLeft,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(bottomRight,	glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 0.0f)));
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 0.0f)));
 }
 
 void Chunk::loadFacePositiveZ(int x, int y, int z)
@@ -640,10 +740,10 @@ void Chunk::loadFacePositiveZ(int x, int y, int z)
 	glm::vec3 topRight		(x * 2 + BLOCK_RENDER_SIZE, y * 2 + BLOCK_RENDER_SIZE, z * 2 + BLOCK_RENDER_SIZE);
 	glm::vec3 topLeft		(x * 2 - BLOCK_RENDER_SIZE, y * 2 + BLOCK_RENDER_SIZE, z * 2 + BLOCK_RENDER_SIZE);
 
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)));
-	m_data.push_back(Vertex(topLeft,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)));
-	m_data.push_back(Vertex(bottomRight,	glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)));
-	m_data.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)));
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)));
+	m_vertData.push_back(Vertex(topLeft,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(topRight,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)));
+	m_vertData.push_back(Vertex(bottomRight,	glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)));
+	m_vertData.push_back(Vertex(bottomLeft,		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)));
 }

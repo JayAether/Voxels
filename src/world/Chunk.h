@@ -2,18 +2,21 @@
 
 
 #include "../engine/ShaderProgram.h"
+#include "blockData.h"
 
 #include <bitset>
+#include <unordered_map>
 
 
 
-#define CHUNK_OFFSET glm::ivec3 
 
-#define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
+typedef glm::ivec3	chunkOffset;
+typedef uint32_t	blockKey;
 
-#define POSITION_LOCATION  0
-#define TEX_COORD_LOCATION 1
-#define NORMAL_LOCATION    2
+
+typename int32_t shaderVertexPosition	= 0;
+typename int32_t shaderVertexNormal		= 1;
+typename int32_t shaderVertexTexCoord	= 2;
 
 
 
@@ -55,14 +58,21 @@ public:
 	};
 
 public:
+	static const int32_t CHUNK_LEN = 32;
+	static const int32_t CHUNK_AREA = CHUNK_LEN * CHUNK_LEN;
+	static const int32_t CHUNK_VOL = CHUNK_LEN * CHUNK_LEN * CHUNK_LEN;
 
-	Chunk(CHUNK_OFFSET chunkPos);
+	Chunk(chunkOffset chunkPos);
 	~Chunk();
 
 	void render(ShaderProgram program);
 
 
 	void generateMap();
+
+	void bake(std::vector<std::shared_ptr<Chunk>> neighbourChunks);
+
+	bool blockStateActive(glm::ivec3 relativeBlockPos);
 
 	void bakeCore();
 	void bakeBorder(Faces direction, bool* blockStates);
@@ -74,11 +84,11 @@ public:
 	void clearData();
 	void populateBuffers();
 
-	CHUNK_OFFSET getChunkOffset() const;
+	chunkOffset getChunkOffset() const;
 
-	inline static double BLOCK_RENDER_SIZE = 1.0;
-	enum BlockID;
 private:
+	inline static const double BLOCK_RENDER_SIZE = 1.0;
+
 	int getBlockIndex3D(int x, int y, int z) const;
 	int getBlockIndex2D(int x, int y) const;
 
@@ -95,21 +105,27 @@ private:
 	void loadFacePositiveZ(int x, int y, int z);
 
 
-public:
-	static const int CHUNK_LEN = 32;
-	static const int CHUNK_AREA = CHUNK_LEN * CHUNK_LEN;
-	static const int CHUNK_VOL = CHUNK_LEN * CHUNK_LEN * CHUNK_LEN;
+
 private:
-	// the offset off of world's 0,0,0. ie multiply this by chunk size to get the chunk position
-	CHUNK_OFFSET m_chunkOffset;
+	// chunk offset works its own coordinate space aside from the true world coords
+	// chunkOffset times chunkSize plus local coords within the chunk equals true world coords
+	chunkOffset m_chunkOffset;
 
 	std::vector<std::vector<std::bitset<CHUNK_LEN>>> m_active;
+	std::unordered_map<blockKey, world::block_data> m_blockData;
 
+	std::vector<Vertex>		m_vertData;
+	//std::vector<glm::vec3>	m_vertPos;
+	//std::vector<glm::vec3>	m_vertNorm;
+	//std::vector<glm::vec2>	m_vertTC;
+	//std::vector<uint32_t>	m_vertIndices;
+	
 	unsigned int m_VAO;
 	//uint32_t m_vb[NUM_BUFFERS];
 	uint32_t m_vb;
 
-	std::vector<Vertex> m_data;
+
+
 
 
 	//FastNoiseLite noise;
