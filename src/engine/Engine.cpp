@@ -4,7 +4,7 @@
 
 
 #include "graphics/Window.h"
-#include "world/World.h"
+#include "../world/World.h"
 //#include "../Refrences.h"
 
 #include <string>

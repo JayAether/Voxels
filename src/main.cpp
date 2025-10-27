@@ -4,15 +4,58 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/matrix.hpp>
 
+
 #include "engine/Engine.h"
 #include "engine/graphics/Window.h"
 #include "world/World.h"
 #include "engine/ShaderProgram.h"
 //#include "engine/graphics/Window.h"
 #include "Refrences.h"
-
 #include "Texture.h"
+
 #include <iostream>
+#include <cassert>
+
+
+//#define tyon_error( message )                                       \
+//        tyon::log_error_format( "Tachyon Error", "{} @ {}:{}: {}",               \
+//                          __FUNCTION__, __FILE__, __LINE__, message );  \
+//        log_flush();
+//
+//// TYON_BREAK should be valid in release builds
+//#define TYON_SIGTRAP 5
+//
+//#if (REFLECTION_COMPILER_CLANG)
+//#define FORCEINLINE __attribute__((always_inline))
+//#define TYON_FORCEINLINE __attribute__((always_inline))
+//#define TYON_BREAK() __builtin_debugtrap();
+//#define TYON_PREFETCH_CACHELINE( address ) __builtin_prefetch( address );
+//#elif (REFLECTION_COMPILER_GCC)
+//#define FORCEINLINE __attribute__((always_inline))
+//#define TYON_FORCEINLINE __attribute__((always_inline))
+//#define TYON_BREAK() raise(TYON_SIGTRAP);
+//#define TYON_PREFETCH_CACHELINE( address ) __builtin_prefetch( address );
+//
+//#elif (REFLECTION_COMPILER_MSVC)
+//#define FORCEINLINE __forceinline
+//#define TYON_FORCEINLINE __forceinline
+//#define TYON_BREAK() __debugbreak();
+//#define TYON_PREFETCH_CACHELINE( address ) PrefetchCacheLine( PF_TEMPORAL_LEVEL_1, (address) );
+//#else
+//#define FORCEINLINE
+//#define TYON_FORCEINLINE
+//#define TYON_BREAK() raise(TYON_SIGTRAP);
+//#define TYON_PREFETCH_CACHELINE( address ) ERROR_PREFETCH_NOT_DEFINED
+//#endif // compiler
+//
+//#define ERROR_GUARD( condition, message )                           \
+//        if ( !(condition) )                                             \
+//        {                                                               \
+//            tyon_errorf( "Error Guard", "Condition: ({}): {}",          \
+//                         #condition, message );                         \
+//            TYON_BREAK();                                               \
+//        };
+
 
 
 void initGlobals();
@@ -22,19 +65,19 @@ void processInput(Camera* camerfa);
 // send txc data
 // its not being sent rn
 
-//void GLAPIENTRY
-//MessageCallback(GLenum source,
-//    GLenum type,
-//    GLuint id,
-//    GLenum severity,
-//    GLsizei length,
-//    const GLchar* message,
-//    const void* userParam)
-//{
-//    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-//        (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-//        type, severity, message);
-//}
+void GLAPIENTRY
+MessageCallback(GLenum source,
+    GLenum type,
+    GLuint id,
+    GLenum severity,
+    GLsizei length,
+    const GLchar* message,
+    const void* userParam)
+{
+    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+        (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+        type, severity, message);
+}
 
 int main()
 {
@@ -48,15 +91,15 @@ int main()
     //Engine engine;
 
 
-    /*glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(MessageCallback, 0);*/
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(MessageCallback, 0);
 
     //engine.setCullFace(1);
     //engine.setDepthTest(true);
     //engine.setOpenglDebugOutput(true);
 
     Texture stone;
-    stone.loadTexture("D:/Voxels/res/textures/container.png");
+    stone.loadTexture("D:/Voxels/res/textures/Voxels simple grass.png");
     stone.bind(0);
 
 	glEnable(GL_DEPTH_TEST);
@@ -71,6 +114,8 @@ int main()
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)600, 0.1f, 20000.0f);
 	voxelProgram.setValue("projection", projection);
+
+	
 
 	while (!glfwWindowShouldClose(engine::graphics::getContext()))
 	{

@@ -31,7 +31,7 @@ message ("Binary path: ${PROJECT_BINARY_DIR}")
 include_directories ("include" "3rdparty")
 
 
-add_executable (Voxels "${PROJECT_SOURCE_DIR}/voxel_unity.cpp" )
+add_executable (Voxels "${PROJECT_SOURCE_DIR}/unity/voxel_unity.cpp" )
 
 
 

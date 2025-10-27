@@ -12,10 +12,7 @@ Texture::Texture()
 {
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
 
-	glTextureParameteri(m_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(m_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(m_id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTextureParameteri(m_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
 }
 
 Texture::~Texture()
@@ -33,7 +30,12 @@ TextureError Texture::loadTexture(std::string filepath)
 	}
 
 	glTextureStorage2D(m_id, 1, GL_RGB8, m_width, m_height);
-	glTextureSubImage2D(m_id, 0, 0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, src.value());
+	glTextureSubImage2D(m_id, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, src.value());
+
+	glTextureParameteri(m_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTextureParameteri(m_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTextureParameteri(m_id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTextureParameteri(m_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glGenerateTextureMipmap(m_id);
 

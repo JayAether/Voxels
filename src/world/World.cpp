@@ -17,7 +17,7 @@ namespace world
 	bool keyExists(chunkOffset pos);
 
 	std::unordered_map<std::string, std::shared_ptr<Chunk>> chunkMap;
-	int renderDistance = 6;
+	int renderDistance = 1;
 
 	bool initWorld()
 	{
@@ -27,9 +27,12 @@ namespace world
 
 	void renderWorld(ShaderProgram program)
 	{
+		//printf("world render before loop\n");
+
 		for (auto i = chunkMap.begin(); i != chunkMap.end(); i++)
 		{
 			i->second->render(program);
+
 		}
 	}
 
@@ -37,18 +40,19 @@ namespace world
 
 	void generateWorld()
 	{
-		for (int x = -renderDistance / 2; x < renderDistance / 2; x++)
+		for (int x = 0; x < renderDistance; x++)
 		{
 			uint32_t y = 1;
 			//for (int y = -worldSize / 2; y < worldSize / 2; y++)
 			{
-				for (int z = -renderDistance / 2; z < renderDistance / 2; z++)
+				for (int z = 0; z < renderDistance; z++)
 				{
 					glm::vec3 f = g_camera->position;
 
 
 					//createChunk(CHUNK_OFFSET(f.x + x, f.y + y, f.z + z));
 					createChunk(chunkOffset(f.x + x, 0, f.z + z));
+
 				}
 			}
 		}
@@ -91,63 +95,6 @@ namespace world
 		chunkMap.at(getChunkKeyFromPos(chunkPos))->clearData();
 		chunkMap.at(getChunkKeyFromPos(chunkPos))->bake(neighbourChunks);
 		chunkMap.at(getChunkKeyFromPos(chunkPos))->populateBuffers();
-
-
-
-
-		//std::shared_ptr<Chunk> workingChunk = chunkMap.at(getChunkKeyFromPos(chunkPos));
-
-
-		//workingChunk->clearData();
-		//workingChunk->bakeCore();
-
-		//for (int i = 0; i < Chunk::Faces::NUM_FACES; i++)
-		//{
-		//	// get direction
-		//	glm::ivec3 axis = { 0, 0, 0 };
-		//	switch (i)
-		//	{
-		//	case Chunk::Faces::NEGATIVE_X:
-		//		axis.x--;
-		//		break;
-		//	case Chunk::Faces::POSITIVE_X:
-		//		axis.x++;
-		//		break;
-		//	case Chunk::Faces::NEGATIVE_Y:
-		//		axis.y--;
-		//		break;
-		//	case Chunk::Faces::POSITIVE_Y:
-		//		axis.y++;
-		//		break;
-		//	case Chunk::Faces::NEGATIVE_Z:
-		//		axis.z--;
-		//		break;
-		//	case Chunk::Faces::POSITIVE_Z:
-		//		axis.z++;
-		//		break;
-		//	default:
-		//		break;
-		//	}
-
-		//	// eject if chunk nonexistant
-		//	if (!keyExists(chunkPos + axis))
-		//		continue;
-
-		//	std::shared_ptr<Chunk> secondaryChunk = chunkMap.at(getChunkKeyFromPos(chunkPos + axis));
-
-		//	int secondaryFace;
-		//	if ((Chunk::Faces)i == Chunk::Faces::NEGATIVE_X || (Chunk::Faces)i == Chunk::Faces::NEGATIVE_Y || (Chunk::Faces)i == Chunk::Faces::NEGATIVE_Z)
-		//		secondaryFace = i + 1;
-		//	else
-		//		secondaryFace = i - 1;
-
-		//	bool secondaryChunkBlockStates[Chunk::CHUNK_AREA];
-		//	secondaryChunk->getBorderBlockStates((Chunk::Faces)secondaryFace, secondaryChunkBlockStates);
-
-		//	workingChunk->bakeBorder((Chunk::Faces)i, secondaryChunkBlockStates);
-		//}
-
-		//workingChunk->populateBuffers();
 	}
 
 
