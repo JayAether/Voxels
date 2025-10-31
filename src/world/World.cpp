@@ -17,7 +17,7 @@ namespace world
 	bool keyExists(chunkOffset pos);
 
 	std::unordered_map<std::string, std::shared_ptr<Chunk>> chunkMap;
-	int renderDistance = 1;
+	int renderDistance = 16;
 
 	bool initWorld()
 	{

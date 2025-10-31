@@ -6,9 +6,7 @@
 
 #include <bitset>
 #include <unordered_map>
-#include <set>
-
-
+#include <memory>
 
 
 typedef glm::ivec3		chunkOffset;
@@ -16,31 +14,15 @@ typedef std::bitset<24>	blockKey;
 
 
 
-
-
-struct Vertex
-{
-	Vertex(glm::vec3 pos, glm::vec3 norm, glm::vec2 texCoord)
-		: pos(pos), norm(norm), texCoord(texCoord)
-	{
-
-	}
-
-	glm::vec3 pos;
-	glm::vec3 norm;
-	glm::vec2 texCoord;
-};
-
-
 class Chunk
 {
-
-	enum Buffers
+	struct vertex
 	{
-		POS,
-		NORM,
-		TEX_COORD,
-		NUM_BUFFERS,
+		glm::vec3 pos;
+		glm::vec3 norm;
+		glm::vec2 tc;
+
+		vertex(glm::vec3 pos, glm::vec3 norm, glm::vec2 texCoord) : pos(pos), norm(norm), tc(texCoord) {}
 	};
 
 public:
@@ -67,14 +49,25 @@ public:
 private:
 	inline static const double BLOCK_RENDER_SIZE = 1.0;
 
+	// chunk offset works its own coordinate space aside from the true world coords
+	// chunkOffset times chunkSize plus local coords within the chunk equals true world coords
+	chunkOffset m_chunkOffset;
+
+	std::vector<std::vector<std::bitset<CHUNK_LEN>>>	m_active;		// active blocks
+	std::unordered_map<blockKey, world::block_data>		m_blockData;	// block types
+
+	std::vector<vertex>		m_vertData;
+	std::vector<uint32_t>	m_vertIndices;
+
+	uint32_t m_VAO;
+	uint32_t m_vb;
+	uint32_t m_ib;
+
 
 	int getBlockIndex3D(int x, int y, int z) const;
 	int getBlockIndex2D(int x, int y) const;
 
 	blockKey getBlockKey(uint32_t x, uint32_t y, uint32_t z);
-
-	void generateGLBufferData();
-
 
 	void loadFaceNegativeX(int x, int y, int z);
 	void loadFacePositiveX(int x, int y, int z);
@@ -82,29 +75,5 @@ private:
 	void loadFacePositiveY(int x, int y, int z);
 	void loadFaceNegativeZ(int x, int y, int z);
 	void loadFacePositiveZ(int x, int y, int z);
-
-
-
-private:
-	// chunk offset works its own coordinate space aside from the true world coords
-	// chunkOffset times chunkSize plus local coords within the chunk equals true world coords
-	chunkOffset m_chunkOffset;
-
-	std::vector<std::vector<std::bitset<CHUNK_LEN>>>	m_active;
-	std::unordered_map<blockKey, world::block_data>		m_blockData;
-
-	std::vector<Vertex>		m_vertData;
-	std::vector<Vertex>		m_vertDataAOS;
-	std::vector<glm::vec3>	m_vertPos;
-	std::vector<glm::vec3>	m_vertNorm;
-	std::vector<glm::vec2>	m_vertTC;
-	std::vector<uint32_t>	m_vertIndices;
-	
-	unsigned int m_VAO;
-	uint32_t m_vb[NUM_BUFFERS];
-	uint32_t m_ib;
-
-	uint32_t vb;
-
 };
 
