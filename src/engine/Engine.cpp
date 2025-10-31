@@ -32,6 +32,7 @@ namespace engine
     {
 
         graphics::initWindow("Tit le", 800, 600);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         if (!gladLoadGL())
         {

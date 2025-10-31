@@ -26,6 +26,7 @@ void main()
 
 
 
-	FragPos = texture(stone, fTexCoord) + vec4(col, 0) - dif;// * dif;// - vec4(0.5);// + fColor;
-	//FragPos = vec4(col,0);
+	//FragPos = texture(stone, fTexCoord) + vec4(col, 0) - dif;// * dif;// - vec4(0.5);// + fColor;
+	//FragPos = texture(stone, fTexCoord);// + vec4(normalize(fTexCoord),0, 0);// * dif;// - vec4(0.5);// + fColor;
+	FragPos = vec4((fNorm + 1) / 2, 0);// * dif;// - vec4(0.5);// + fColor;
 }

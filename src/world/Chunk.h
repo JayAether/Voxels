@@ -94,13 +94,17 @@ private:
 	std::unordered_map<blockKey, world::block_data>		m_blockData;
 
 	std::vector<Vertex>		m_vertData;
+	std::vector<Vertex>		m_vertDataAOS;
 	std::vector<glm::vec3>	m_vertPos;
 	std::vector<glm::vec3>	m_vertNorm;
 	std::vector<glm::vec2>	m_vertTC;
 	std::vector<uint32_t>	m_vertIndices;
 	
 	unsigned int m_VAO;
-	uint32_t m_vb;
+	uint32_t m_vb[NUM_BUFFERS];
+	uint32_t m_ib;
+
+	uint32_t vb;
 
 };
 

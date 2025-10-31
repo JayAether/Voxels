@@ -91,13 +91,18 @@ ShaderProgram::ShaderProgram(const char* vertexPath, const char* fragmentPath)
     glDeleteShader(fragment);
 }
 
-
-ShaderProgram::~ShaderProgram()
-{
-
-
-    glDeleteProgram(ID);
+ShaderProgram::~ShaderProgram() {
+    /*glDeleteProgram(ID);*/
 }
+
+
+void ShaderProgram::cleanup()
+{
+    glDeleteProgram(ID);
+
+}
+
+
 // sets the program to be the current active program
 void ShaderProgram::use()
 {

@@ -29,7 +29,10 @@ public:
 
     ShaderProgram(const char* vertexPath, const char* fragmentPath);
     
+
     ~ShaderProgram();
+
+    void cleanup();
 
     void use();
 

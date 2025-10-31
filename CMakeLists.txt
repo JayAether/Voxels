@@ -65,6 +65,3 @@ FetchContent_MakeAvailable(glfw)
 
 target_link_libraries(Voxels PRIVATE glfw)
 
-
-
-

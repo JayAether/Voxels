@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/matrix.hpp>
-
+#include <nlohmann/json.hpp>
 
 #include "engine/Engine.h"
 #include "engine/graphics/Window.h"
@@ -17,46 +17,6 @@
 #include <cassert>
 
 
-//#define tyon_error( message )                                       \
-//        tyon::log_error_format( "Tachyon Error", "{} @ {}:{}: {}",               \
-//                          __FUNCTION__, __FILE__, __LINE__, message );  \
-//        log_flush();
-//
-//// TYON_BREAK should be valid in release builds
-//#define TYON_SIGTRAP 5
-//
-//#if (REFLECTION_COMPILER_CLANG)
-//#define FORCEINLINE __attribute__((always_inline))
-//#define TYON_FORCEINLINE __attribute__((always_inline))
-//#define TYON_BREAK() __builtin_debugtrap();
-//#define TYON_PREFETCH_CACHELINE( address ) __builtin_prefetch( address );
-//#elif (REFLECTION_COMPILER_GCC)
-//#define FORCEINLINE __attribute__((always_inline))
-//#define TYON_FORCEINLINE __attribute__((always_inline))
-//#define TYON_BREAK() raise(TYON_SIGTRAP);
-//#define TYON_PREFETCH_CACHELINE( address ) __builtin_prefetch( address );
-//
-//#elif (REFLECTION_COMPILER_MSVC)
-//#define FORCEINLINE __forceinline
-//#define TYON_FORCEINLINE __forceinline
-//#define TYON_BREAK() __debugbreak();
-//#define TYON_PREFETCH_CACHELINE( address ) PrefetchCacheLine( PF_TEMPORAL_LEVEL_1, (address) );
-//#else
-//#define FORCEINLINE
-//#define TYON_FORCEINLINE
-//#define TYON_BREAK() raise(TYON_SIGTRAP);
-//#define TYON_PREFETCH_CACHELINE( address ) ERROR_PREFETCH_NOT_DEFINED
-//#endif // compiler
-//
-//#define ERROR_GUARD( condition, message )                           \
-//        if ( !(condition) )                                             \
-//        {                                                               \
-//            tyon_errorf( "Error Guard", "Condition: ({}): {}",          \
-//                         #condition, message );                         \
-//            TYON_BREAK();                                               \
-//        };
-
-
 
 void initGlobals();
 void mouseFollow(GLFWwindow* window, double xposIn, double yposIn);
@@ -65,22 +25,61 @@ void processInput(Camera* camerfa);
 // send txc data
 // its not being sent rn
 
-void GLAPIENTRY
-MessageCallback(GLenum source,
-    GLenum type,
-    GLuint id,
-    GLenum severity,
-    GLsizei length,
-    const GLchar* message,
-    const void* userParam)
+//void GLAPIENTRY
+//MessageCallback(GLenum source,
+//    GLenum type,
+//    GLuint id,
+//    GLenum severity,
+//    GLsizei length,
+//    const GLchar* message,
+//    const void* userParam)
+//{
+//    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+//        (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+//        type, severity, message);
+//}
+void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
-    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-        (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-        type, severity, message);
+	auto const src_str = [source]() {
+		switch (source)
+		{
+		case GL_DEBUG_SOURCE_API: return "API";
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "WINDOW SYSTEM";
+		case GL_DEBUG_SOURCE_SHADER_COMPILER: return "SHADER COMPILER";
+		case GL_DEBUG_SOURCE_THIRD_PARTY: return "THIRD PARTY";
+		case GL_DEBUG_SOURCE_APPLICATION: return "APPLICATION";
+		case GL_DEBUG_SOURCE_OTHER: return "OTHER";
+		}
+		}();
+
+	auto const type_str = [type]() {
+		switch (type)
+		{
+		case GL_DEBUG_TYPE_ERROR: return "ERROR";
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "DEPRECATED_BEHAVIOR";
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "UNDEFINED_BEHAVIOR";
+		case GL_DEBUG_TYPE_PORTABILITY: return "PORTABILITY";
+		case GL_DEBUG_TYPE_PERFORMANCE: return "PERFORMANCE";
+		case GL_DEBUG_TYPE_MARKER: return "MARKER";
+		case GL_DEBUG_TYPE_OTHER: return "OTHER";
+		}
+		}();
+
+	auto const severity_str = [severity]() {
+		switch (severity) {
+		case GL_DEBUG_SEVERITY_NOTIFICATION: return "NOTIFICATION";
+		case GL_DEBUG_SEVERITY_LOW: return "LOW";
+		case GL_DEBUG_SEVERITY_MEDIUM: return "MEDIUM";
+		case GL_DEBUG_SEVERITY_HIGH: return "HIGH";
+		}
+		}();
+	std::cout << src_str << ", " << type_str << ", " << severity_str << ", " << id << ": " << message << '\n';
 }
+
 
 int main()
 {
+
     initGlobals();
 
 	engine::init();
@@ -89,28 +88,33 @@ int main()
 	engine::graphics::setMouseCallback(mouseFollow);
 	engine::graphics::setMouse(engine::graphics::mouse_mode::DISABLED);
     //Engine engine;
+	
+	//int d;
+	//glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &d);
+	//std::cout << "opengl version: " << d << '\n';
 
 
     glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(MessageCallback, 0);
+    glDebugMessageCallback(message_callback, 0);
+
 
     //engine.setCullFace(1);
     //engine.setDepthTest(true);
     //engine.setOpenglDebugOutput(true);
 
     Texture stone;
-    stone.loadTexture("D:/Voxels/res/textures/Voxels simple grass.png");
+    stone.loadTexture("/Voxels/res/textures/grass_block_top_diffuse.png");
     stone.bind(0);
 
 	glEnable(GL_DEPTH_TEST);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_FRONT);
 
 	world::bakeWorld();
 
 	
-	ShaderProgram voxelProgram("D:\\Voxels\\res\\shaders\\Block.vert", "D:\\Voxels\\res\\shaders\\Block.frag");
+	ShaderProgram voxelProgram("/Voxels/res/shaders/Block.vert", "/Voxels/res/shaders/Block.frag");
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)600, 0.1f, 20000.0f);
 	voxelProgram.setValue("projection", projection);
@@ -140,6 +144,9 @@ int main()
 		// update
 		engine::updateFrame();
 	}
+
+
+	voxelProgram.cleanup();
 }
 
 void initGlobals()
